@@ -8,6 +8,7 @@
 #' As a fully data-driven/automated process -- for best performance -- `spectracle` relies on adherence to established naming conventions for appropriate identification of the unstained control, parsing of keyword-value pairs into factored metadata, and accurate annotation of derived spectra.
 #'
 #' @param raw.reference.controls a character vector of full directory/path names to raw single-color control .fcs files; one of [list.dirs] or [list.files].
+#' @param filter.top.expressing a character vector -- default `NULL`; to modulate the automated selection of 'spectral.events', the supplied character vector should match to unique .fcs sample name(s). If defined, a conditional filtering will take place to return only the 0.99 (cosine) most similar 'spectral.events'.
 #' @param top.expressing.override a named numeric vector -- default `NULL`; to override the automated selection of 'spectral.events', the name(s) of the supplied numeric vector should match to unique .fcs sample name(s). Example as follows: c("BUV615 (Cells)" = 20); for 'BUV615', only 20 top expressing events will be used to characterize/derive the final spectra (see example below).
 #' @param print.timings logical -- default `FALSE`; if `TRUE`, a [tictoc][tictoc::tic.log] will print to the console, detailing execution times.
 #' @param ... not defined; placeholder.
@@ -43,10 +44,10 @@
 #' ## impacted by AF -- the spectra is off...
 #' plot_trace(spectra[N == "BUV615"])
 #'
-#' ## rerun with a small tweak
+#' ## ...rerun with a small tweak
 #' spectra <- spectracle(
 #' raw.reference.controls[c(1,3)],
-#' top.expressing.override = c("BUV615 (Cells)" = 20)
+#' filter.top.expressing = c("BUV615 (Cells)")
 #' )
 #'
 #' ## spectra is derived
@@ -55,6 +56,7 @@
 #'
 spectracle <- function(
     raw.reference.controls,
+    filter.top.expressing = NULL,
     top.expressing.override = NULL,
     print.timings= FALSE,
     ...
@@ -65,11 +67,14 @@ spectracle <- function(
 
   ## accepts a directory (containing .fcs files) or accepts .fcs file paths
   l <- length(raw.reference.controls)
-  if(!all(grepl(".fcs", raw.reference.controls)) & l == 1){
-    ## get paths to raw .fcs files if a directory;
-    ## reference group controls
-    ref.paths <- list.files(raw.reference.controls, full.names = T)
-  }else if(all(grepl(".fcs", raw.reference.controls)) & l != 1){
+  if(!all(grepl(".fcs", raw.reference.controls)) && l == 1){
+    ## single directory path: enumerate .fcs files within it
+    ref.paths <- list.files(
+      raw.reference.controls,
+      full.names = TRUE,
+      pattern = ".fcs"
+    )
+  }else if(all(grepl(".fcs", raw.reference.controls)) && l != 1){
     ref.paths <- raw.reference.controls
   }
 
@@ -182,7 +187,7 @@ spectracle <- function(
   ]
   ##
   ref$data[
-    i = N != "AF",
+    ,
     j = spectral.events := {
       ## basic vector sorting for top (peak detector) expressing events
       detector <- as.character(.BY$detector)
@@ -195,14 +200,43 @@ spectracle <- function(
       )
       ## set top n expressing events
       n <- 200
-      if(!is.null(top.expressing.override)){
+      if (!is.null(top.expressing.override)) {
         id <- as.character(.BY$sample.id)
-        if(names(top.expressing.override) %in% id){
+        if (id %in% names(top.expressing.override)) {
           n <- top.expressing.override[[id]]
         }
       }
       ## re-index -- lowest cosine score
       i.top <- i.top[order(i.cs)][1:n]
+
+      if (!is.null(filter.top.expressing)) {
+        id <- as.character(.BY$sample.id)
+        if (id %in% filter.top.expressing) {
+          ## a final (final?) filter
+          i.max <- which.max(.SD[i.top][[detector]])
+          i.cs <- cosine.similarity.mat(
+            x = as.matrix(.SD[i.top]),
+            reference.vector = unlist(.SD[i.top][i.max])
+          )
+          i.top <- i.top[which(i.cs > 0.99)]
+        }
+      }
+
+      # n <- length(i.top)
+      # r <- range(.SD[i.top])
+      # colors <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(11, "RdYlBu"))(n)
+      # colors <- rev(colors)
+      # for(i in seq(n)){
+      #   plot_spectral.trace.base(
+      #     unlist(.SD[i.top[i]]),
+      #     ylim = r,
+      #     add.lines = isTRUE(i != 1),
+      #     col = colors[i],
+      #     sub = sprintf("Detector (peak): %s", detector)
+      #     # ...
+      #   )
+      # }
+
       ## index and set the logical
       spectral.events[i.top] <- TRUE
       ## return the logical
@@ -230,70 +264,47 @@ spectracle <- function(
 
   tictoc::tic("AF scatter matching using nearest neighbors")
 
-  ## scatter match to subtract AF; per-nearest two cells/neighbors
-  ## input/data matrix for FNN::knnx.index()
-  ## subset AF ; [['data']] only; 'cols.scatter' only
-  af.scatter <- (
-    subset(ref.spectral, N == "AF" & tissue.type == 'Cells')
-    [['data']][, .SD, .SDcols = cols.scatter]
+  ## prepare AF subsets for eventual scatter-matching/subtraction
+  af.sub       <- subset(ref.spectral, N == "AF" & tissue.type == "Cells")[["data"]]
+  af.scatter   <- af.sub[, .SD, .SDcols = cols.scatter]
+  af.detectors <- af.sub[, .SD, .SDcols = cols.detector]
+  rm(af.sub)
+
+  k        <- 2L  #@params
+  cols.nni <- paste0("nni.", seq_len(k))
+
+  ## single-pass KNN across all non-AF events
+  all.spectral.scatter <- ref.spectral$data[N != "AF", .SD, .SDcols = cols.scatter]# this might create a copy in memory; need to check mem address
+  all.nni <- FNN::knnx.index(
+    data  = as.matrix(af.scatter),
+    query = as.matrix(all.spectral.scatter),
+    k     = k
   )
-  ## subset AF ; [['data']] only; 'cols.detector' only
-  af.detectors <- (
-    subset(ref.spectral, N == "AF" & tissue.type == 'Cells')
-    [['data']][, .SD, .SDcols = cols.detector]
-  )
-  ## some data.table abuse below...
-  ## trying to capture the derivatives/intermediates so that they can be returned if needed
-  ## ...
-  k <- 2#@params
-  cols.nni <- paste0('nni.', seq(k))
-  ## 1) scatter match to 'af.scatter' to create an index 'nni'
-  ref.spectral$data[
-    i = N != "AF",
-    j = (cols.nni) := {
-      ## 1) nearest neighbors scatter match between spectral events and AF/unstained
-      nni <- FNN::knnx.index(
-        data = af.scatter,
-        query = .SD,
-        k = k
-      )
-      ## UPDATE BY REFERENCE the indices that match to 'af.scatter'
-      as.data.frame(nni)
-    },
-    .SDcols = cols.scatter,
-    by = cols.by
-  ]
+
+  ref.spectral$data[N != "AF", (cols.nni) := as.data.frame(all.nni)]
+  rm(all.spectral.scatter, all.nni)
 
   tictoc::toc(log = TRUE, quiet = TRUE)
 
   tictoc::tic("AF medians matching")
 
   ## 2) median for each group/row of points in 'nni' to derive scatter-matched 'af.detectors' vectors
-  ## this is the slowest part, at least according to my timings -- there is a faster way, I'm sure;
-  ## matrix operations will probably be faster here
+  ## replaced with vectorised matrix indexing -- for k=2 the median of two values equals their mean
+  af.det.mat <- as.matrix(af.detectors[, .SD, .SDcols = cols.detector])
+  n.det    <- ncol(af.det.mat)
   af.medians <- ref.spectral$data[
     i = N != "AF",
     j = {
-      ## this seems quite a hack to match up the points...but it works
-      ## data.table optimized loop using data.table::set to index the row groupings in 'af.detectors'
-      for(i in seq(.N)){
-        data.table::set(
-          x = af.detectors,
-          i = c(t(.SD[i])),
-          j = 'group',
-          value = i
-        )
+      nni.mat  <- as.matrix(.SD)           # .N x k: each row = neighbor indices
+      # n.det    <- ncol(af.det.mat)#moving this outside the j loop as it is invariant
+      af.med   <- matrix(0, .N, n.det)
+      for (ki in seq_len(k)) {
+        af.med <- af.med + af.det.mat[nni.mat[, ki], , drop = FALSE]
       }
-      ## medians by group
-      af.medians <- af.detectors[
-        i = !is.na(group),
-        j = lapply(.SD, stats::median),
-        keyby = group
-      ]
-      ## NULL out the temporary groupings
-      af.detectors[, group := NULL]
-      ## return the medians
-      af.medians
+      af.med <- af.med / k               # mean == median when k = 2
+      colnames(af.med) <- cols.detector
+      cbind(data.table::data.table(group = seq_len(.N)),
+            data.table::as.data.table(af.med))
     },
     .SDcols = cols.nni,
     by = cols.by
