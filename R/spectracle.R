@@ -83,6 +83,9 @@ spectracle <- function(
 
   tictoc::tic.clear()
   tictoc::tic.clearlog()
+
+  tictoc::tic("Making a Spectacle of Your Spectra with spectracle")
+
   tictoc::tic("read/concatenate flowstate")
 
   suppressMessages(
@@ -361,7 +364,11 @@ spectracle <- function(
   ##
 
   tictoc::toc(log = TRUE, quiet = TRUE)
+
+  tictoc::toc(log = TRUE, quiet = TRUE)
+
   log <- tictoc::tic.log(format = TRUE)
+
   if(print.timings){
     print(unlist(log))
   }
