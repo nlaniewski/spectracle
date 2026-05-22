@@ -7,6 +7,14 @@
 \description{
 Fully automated derivation and characterization of spectra from full spectrum cytometry controls -- 'making a spectacle of your spectra'.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/nlaniewski/spectracle}
+  \item Report bugs at \url{https://github.com/nlaniewski/spectracle/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Nathan Laniewski \email{nathan_laniewski@urmc.rochester.edu}
 
