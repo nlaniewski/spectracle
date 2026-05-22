@@ -5,6 +5,8 @@
 \alias{spectracle-package}
 \title{spectracle: Derive Spectra from Full Spectrum Cytometry Controls}
 \description{
+\if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
+
 Fully automated derivation and characterization of spectra from full spectrum cytometry controls -- 'making a spectacle of your spectra'.
 }
 \seealso{
