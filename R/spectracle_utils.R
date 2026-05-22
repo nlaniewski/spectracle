@@ -131,3 +131,17 @@ cosine.similarity.filter <- function(mat, method = c('median', 'mean'), plot = F
     )
   )
 }
+
+cosine.filter.spectral.events <- function(x, threshold = 0.999){
+  ##
+  mat <- as.matrix(x)
+  ## Normalize each row to unit length (Euclidean norm = 1)
+  X_norm <- x / sqrt(rowSums(x^2))
+  ## Matrix multiplication -- cosine similarity
+  sim_matrix <- X_norm %*% t(X_norm)
+  ## logical condition to identify matching pairs; affected by threshold
+  threshold <- 0.999
+  matching_rows <- which(rowSums(sim_matrix >= threshold & sim_matrix < 1) > 0)
+  ## unique indicies
+  unique(matching_rows)
+}

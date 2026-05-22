@@ -6,6 +6,7 @@
 \usage{
 spectracle(
   raw.reference.controls,
+  filter.top.expressing = NULL,
   top.expressing.override = NULL,
   print.timings = FALSE,
   ...
@@ -13,6 +14,8 @@ spectracle(
 }
 \arguments{
 \item{raw.reference.controls}{a character vector of full directory/path names to raw single-color control .fcs files; one of \link{list.dirs} or \link{list.files}.}
+
+\item{filter.top.expressing}{a character vector -- default \code{NULL}; to modulate the automated selection of 'spectral.events', the supplied character vector should match to unique .fcs sample name(s). If defined, a conditional filtering will take place to return only the 0.99 (cosine) most similar 'spectral.events'.}
 
 \item{top.expressing.override}{a named numeric vector -- default \code{NULL}; to override the automated selection of 'spectral.events', the name(s) of the supplied numeric vector should match to unique .fcs sample name(s). Example as follows: c("BUV615 (Cells)" = 20); for 'BUV615', only 20 top expressing events will be used to characterize/derive the final spectra (see example below).}
 
@@ -58,10 +61,10 @@ plot_trace(spectra[N == "eFluor 450"])
 ## impacted by AF -- the spectra is off...
 plot_trace(spectra[N == "BUV615"])
 
-## rerun with a small tweak
+## ...rerun with a small tweak
 spectra <- spectracle(
 raw.reference.controls[c(1,3)],
-top.expressing.override = c("BUV615 (Cells)" = 20)
+filter.top.expressing = c("BUV615 (Cells)")
 )
 
 ## spectra is derived
