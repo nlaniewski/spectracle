@@ -15,6 +15,19 @@ You can install `spectracle` from [GitHub](https://github.com/) with:
 pak::pak("nlaniewski/spectracle")
 ```
 
+## Notice
+
+Currently only working with cellular controls only.
+
+2026-05-23 – Currently only tested/working with
+(Manufacturer::Instrument::Software):
+
+- Cytek::Aurora(5L)::SpectroFlo 3+ – cellular *(Cells)* controls only
+  - OMIP-069
+  - OMIP-069v2
+  - OMIP-109
+  - in-house datasets
+
 ## Making a Spectacle of Your Spectra
 
 The series of figures below is a visual representation of what can be
