@@ -103,7 +103,7 @@ spectracle <- function(
 
   ## software naming convention into keywords;
   ## Spectroflo only for now
-  flowstate:::reference.group.keywords(ref)
+  reference.group.keywords(ref)
   ## remove saturating events
   flowstate::select_nonsaturating(ref)
   ref <- subset(ref, select.nonsaturating)
@@ -116,34 +116,42 @@ spectracle <- function(
   tictoc::toc(log = TRUE, quiet = TRUE)
 
   ## variables needed
-  cols.by <- ref$data[, names(.SD), .SDcols = is.factor]
-  detectors.pn <- ref$parameters[TYPE == "Raw_Fluorescence", N]
-  cols.detector <- names(ref$data)[ref$data[, sapply(.SD, attr, 'N') %in% detectors.pn]]
-  cols.scatter <- grep("[FS]SC", names(ref$data), value = T)
-  cols.mdat <- names(ref$keywords)[names(ref$keywords) %in% c('$CYT', '$CYTSN', 'CREATOR', '$PROJ', '$DATE')]
-  mdat <- ref$keywords[, unique(.SD), .SDcols = cols.mdat]
+  var <- get.vars(ref)
+  # cols.by <- ref$data[, names(.SD), .SDcols = is.factor]
+  # detectors.pn <- ref$parameters[TYPE == "Raw_Fluorescence", N]
+  # cols.detector <- names(ref$data)[ref$data[, sapply(.SD, attr, 'N') %in% detectors.pn]]
+  # cols.scatter <- grep("[FS]SC", names(ref$data), value = T)
+  # cols.mdat <- names(ref$keywords)[names(ref$keywords) %in% c('$CYT', '$CYTSN', 'CREATOR', '$PROJ', '$DATE')]
+  # mdat <- ref$keywords[, unique(.SD), .SDcols = cols.mdat]
 
   tictoc::tic("autofluorescence -- characterizing")
 
   ## autofluorescence -- generalized; vector (mean)
   af.vec.mean <- ref$data[
     i = N == "AF" & tissue.type == "Cells",
-    j = sapply(.SD, mean),
-    .SDcols = cols.detector
-  ]
+    j = {
+      res <- lapply(.SD, mean)
+      c(res, detector = names(which.max(res)))
+    },
+    .SDcols = vars$detectors,
+    by = c(vars$cols.by)
+  ][, detector := factor(detector, levels = vars$detectors)]
   ## autofluorescence -- generalized; vector (median)
   ## for adding to spectra during final output
   af.vec.median <- ref$data[
     i = N == "AF" & tissue.type == "Cells",
-    j = lapply(.SD, stats::median),
-    .SDcols = cols.detector,
-    by = cols.by
-  ][, detector := names(which.max(.SD)), .SDcols = cols.detector]
+    j = {
+      res <- lapply(.SD, stats::median)
+      c(res, detector = names(which.max(res)))
+    },
+    .SDcols = vars$detectors,
+    by = c(vars$cols.by)
+  ][, detector := factor(detector, levels = vars$detectors)]
   ## add dominant AF detector to [['data']]
   ## UPDATES BY REFERENCE
   ref$data[
     i = N == "AF" & tissue.type == "Cells",
-    j = detector := names(which.max(af.vec.mean))
+    j = detector := af.vec.mean[N == "AF" & tissue.type == 'Cells'][['detector']]
   ]
 
   tictoc::toc(log = TRUE, quiet = TRUE)
@@ -151,13 +159,14 @@ spectracle <- function(
   tictoc::tic("removing AF vector (projection-based orthogonalization) and deriving peak detector")
 
   ## METHOD -- projection-based orthogonalization (googled this term for R code...)
-  ## normalize the (nuisance) vector
-  v_unit <- af.vec.mean / sqrt(sum(af.vec.mean^2))
+  ## normalize the (intrusive/nuisance) vector
+  v <- af.vec.mean[, unlist(.SD), .SDcols = is.numeric]
+  v_unit <- v / sqrt(sum(v^2))
   v_unit_t <- t(v_unit)
   ## apply METHOD to [['data']];
   ## UPDATES BY REFERENCE
   ref$data[
-    i = N != 'AF',
+    i = N != 'AF' & tissue.type == "Cells",
     j = detector := {
       ## the internal bits are vectorized here (I think...);
       ## possible speed gain with another projection method; lm/residuals?
@@ -171,11 +180,9 @@ spectracle <- function(
       detector.peak <- names(which.max(apply(mat_cleaned, 2, mean)))
       ##
     },
-    .SDcols = cols.detector,
-    by = cols.by
-  ][, detector := factor(detector)]
-  ## update 'cols.by'
-  cols.by <- ref$data[, names(.SD), .SDcols = is.factor]
+    .SDcols = vars$detectors,
+    by = c(vars$cols.by)
+  ]
 
   tictoc::toc(log = TRUE, quiet = TRUE)
 
@@ -190,7 +197,7 @@ spectracle <- function(
   ]
   ##
   ref$data[
-    ,
+    i = N != "AF" & tissue.type == "Cells",
     j = spectral.events := {
       ## basic vector sorting for top (peak detector) expressing events
       detector <- as.character(.BY$detector)
@@ -245,8 +252,8 @@ spectracle <- function(
       ## return the logical
       spectral.events
     },
-    .SDcols = cols.detector,
-    by = cols.by
+    .SDcols = vars$detectors,
+    by = c(vars$cols.by, 'detector')
   ]
   ## subset ref to retain only spectral events
   ref.spectral <- subset(ref, spectral.events)
@@ -258,10 +265,9 @@ spectracle <- function(
     j = detector := {
       names(which.max(lapply(.SD, mean)))
     },
-    .SDcols = cols.detector,
-    by = cols.by
+    .SDcols = vars$detectors,
+    by = c(vars$cols.by, 'detector')
   ]
-  ref.spectral$data[, detector := factor(detector, levels = cols.detector)]
 
   tictoc::toc(log = TRUE, quiet = TRUE)
 
@@ -269,22 +275,29 @@ spectracle <- function(
 
   ## prepare AF subsets for eventual scatter-matching/subtraction
   af.sub       <- subset(ref.spectral, N == "AF" & tissue.type == "Cells")[["data"]]
-  af.scatter   <- af.sub[, .SD, .SDcols = cols.scatter]
-  af.detectors <- af.sub[, .SD, .SDcols = cols.detector]
+  af.scatter   <- af.sub[, .SD, .SDcols = vars$scatter]
+  af.detectors <- af.sub[, .SD, .SDcols = vars$detectors]
   rm(af.sub)
 
   k        <- 2L  #@params
   cols.nni <- paste0("nni.", seq_len(k))
 
   ## single-pass KNN across all non-AF events
-  all.spectral.scatter <- ref.spectral$data[N != "AF", .SD, .SDcols = cols.scatter]# this might create a copy in memory; need to check mem address
+  all.spectral.scatter <- ref.spectral$data[
+    i = N != "AF" & tissue.type == 'Cells',
+    j = .SD,
+    .SDcols = vars$scatter
+  ]# this might create a copy in memory; need to check mem address
   all.nni <- FNN::knnx.index(
     data  = as.matrix(af.scatter),
     query = as.matrix(all.spectral.scatter),
     k     = k
   )
 
-  ref.spectral$data[N != "AF", (cols.nni) := as.data.frame(all.nni)]
+  ref.spectral$data[
+    i = N != "AF" & tissue.type == 'Cells',
+    (cols.nni) := as.data.frame(all.nni)
+  ]
   rm(all.spectral.scatter, all.nni)
 
   tictoc::toc(log = TRUE, quiet = TRUE)
@@ -293,24 +306,24 @@ spectracle <- function(
 
   ## 2) median for each group/row of points in 'nni' to derive scatter-matched 'af.detectors' vectors
   ## replaced with vectorised matrix indexing -- for k=2 the median of two values equals their mean
-  af.det.mat <- as.matrix(af.detectors[, .SD, .SDcols = cols.detector])
+  af.det.mat <- as.matrix(af.detectors[, .SD, .SDcols = vars$detectors])
   n.det    <- ncol(af.det.mat)
   af.medians <- ref.spectral$data[
-    i = N != "AF",
+    i = N != "AF" & tissue.type == 'Cells',
     j = {
-      nni.mat  <- as.matrix(.SD)           # .N x k: each row = neighbor indices
-      # n.det    <- ncol(af.det.mat)#moving this outside the j loop as it is invariant
+      nni.mat  <- as.matrix(.SD)# .N x k: each row = neighbor indices
       af.med   <- matrix(0, .N, n.det)
       for (ki in seq_len(k)) {
         af.med <- af.med + af.det.mat[nni.mat[, ki], , drop = FALSE]
       }
-      af.med <- af.med / k               # mean == median when k = 2
-      colnames(af.med) <- cols.detector
-      cbind(data.table::data.table(group = seq_len(.N)),
-            data.table::as.data.table(af.med))
+      af.med <- af.med / k# mean for k = 2; k is fixed for now
+      colnames(af.med) <- vars$detectors
+      cbind(
+        data.table::data.table(group = seq_len(.N)),
+        data.table::as.data.table(af.med))
     },
     .SDcols = cols.nni,
-    by = cols.by
+    by = c(vars$cols.by, 'detector')
   ]
 
   tictoc::toc(log = TRUE, quiet = TRUE)
@@ -319,7 +332,7 @@ spectracle <- function(
 
   ## 3) subtract out the matched AF vectors (rows); medians for linear vector; normalize
   spectra <- ref.spectral$data[
-    i = N != "AF",
+    i = N != "AF" & tissue.type == 'Cells',
     j = {
       ## 3 CONDITIONAL) af.medians (matched to sample) can have fewer rows due to duplicate nni matches;
       ## get the group index to drop rows in .SD so they match up for subtraction
@@ -328,7 +341,7 @@ spectracle <- function(
         (.SD[i.group] - af.medians[
           i = sample.id == .BY$sample.id,
           j = .SD,
-          .SDcols = cols.detector
+          .SDcols = vars$detectors
         ]),
         stats::median
       )
@@ -336,8 +349,8 @@ spectracle <- function(
       spectral.vec.norm[spectral.vec.norm < 0] <- 0
       as.list(spectral.vec.norm)
     },
-    .SDcols = cols.detector,
-    by = cols.by
+    .SDcols = vars$detectors,
+    by = c(vars$cols.by, 'detector')
   ]
 
   tictoc::toc(log = TRUE, quiet = TRUE)
@@ -351,17 +364,26 @@ spectracle <- function(
     ,
     laser := factor(
       gsub("\\d+", "", detector),
-      levels = unique(gsub("\\d+", "", cols.detector))
+      levels = unique(gsub("\\d+", "", vars$detectors))
     )
   ]
-  data.table::setcolorder(spectra, c(cols.by, 'laser'))
-  spectra <- cbind(deriving.function = 'spectracle', mdat, spectra)
-  data.table::setorder(spectra, laser, detector)
-  ##AF to last position
-  spectra[N != "AF", ord := seq(.N)]
-  spectra[N == "AF", ord := spectra[, .N]]
-  data.table::setorder(spectra, ord)[, ord := NULL]
+  data.table::setcolorder(spectra, c(vars$cols.by, 'detector', 'laser'))
   ##
+  pkg <- "spectracle"
+  deriving.function <- sprintf("%s_%s", pkg, utils::packageVersion(pkg))
+  spectra <- cbind(deriving.function, vars$mdat, spectra)
+  ##
+  data.table::setorder(spectra, laser, detector)
+  ## AF to last position
+  spectra[N != "AF", ord := seq(.N)]
+  spectra[N == "AF", ord := max(spectra[['ord']], na.rm = T) + seq(.N)]
+  data.table::setorder(spectra, ord)[, ord := NULL]
+  ## add hashes
+  spectra[
+    ,
+    hash.md5 := apply(.SD, 1, digest::digest, algo = "md5"),
+    .SDcols = vars$detectors
+  ]
 
   tictoc::toc(log = TRUE, quiet = TRUE)
 

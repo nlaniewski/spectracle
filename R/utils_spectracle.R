@@ -54,10 +54,15 @@ plot_trace <- function(spectra){
     j = {
       plot_spectral.trace.base(
         x = unlist(.SD),
-        main = paste0(.BY$detector,'::',.BY$N,'::',.BY$S),
+        main = ifelse(
+          .BY$N == "AF",
+          paste0(.BY$detector, '::', .BY$N, '::', .BY$tissue.type),
+          paste0(.BY$detector, '::', .BY$N, '::', .BY$S, '::', .BY$tissue.type)
+        ),
         col = "purple"
       )
       graphics::abline(v = which(levels(detector) %in% detector), lty = 'dashed')
+      graphics::mtext(paste(vars$mdat, collapse = "::"), side = 1, line = 4, adj = 0, cex = 0.75)
     },
     .SDcols = is.numeric,
     by = c(spectra[, names(.SD), .SDcols = is.factor])
