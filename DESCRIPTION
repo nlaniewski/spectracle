@@ -1,6 +1,6 @@
 Package: spectracle
 Title: Derive Spectra from Full Spectrum Cytometry Controls
-Version: 0.0.0.9000
+Version: 0.0.1
 Authors@R: c(
     person(
       "Nathan", "Laniewski",
