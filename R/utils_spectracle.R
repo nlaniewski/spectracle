@@ -49,18 +49,21 @@ plot_spectral.trace.base <- function(x, add.lines = F, ...){
 #'
 plot_trace <- function(spectra){
   ##
-  mdat <- spectra[
-    ,
-    .SD,
-    .SDcols = mtext.keywords,
-    by = c(spectra[, names(.SD), .SDcols = is.factor])
-  ]
-  mdat[
-    ,
-    .mtext := paste(.SD, collapse = "::"),
-    .SDcols = mtext.keywords,
-    by = sample.id
-  ]
+  res.mdat <- all(mtext.keywords %in% names(spectra))
+  if(res.mdat){
+    mdat <- spectra[
+      ,
+      .SD,
+      .SDcols = mtext.keywords,
+      by = c(spectra[, names(.SD), .SDcols = is.factor])
+    ]
+    mdat[
+      ,
+      .mtext := paste(.SD, collapse = "::"),
+      .SDcols = mtext.keywords,
+      by = sample.id
+    ]
+  }
   ##
   spectra[
     ,
@@ -75,10 +78,12 @@ plot_trace <- function(spectra){
         col = "purple"
       )
       graphics::abline(v = which(levels(detector) %in% detector), lty = 'dashed')
-      graphics::mtext(
-        mdat[sample.id == .BY$sample.id][['.mtext']],
-        side = 1, line = 4, adj = 0, cex = 0.75
-      )
+      if(res.mdat){
+        graphics::mtext(
+          mdat[sample.id == .BY$sample.id][['.mtext']],
+          side = 1, line = 4, adj = 0, cex = 0.75
+        )
+      }
     },
     .SDcols = is.numeric,
     by = c(spectra[, names(.SD), .SDcols = is.factor])

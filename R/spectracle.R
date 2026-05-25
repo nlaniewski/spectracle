@@ -114,6 +114,8 @@ spectracle <- function(
   ## software naming convention into keywords;
   ## Spectroflo only for now
   reference.group.keywords(ref)
+  ## variables needed
+  vars <- get.vars(ref)
   ## remove saturating events
   flowstate::select_nonsaturating(ref)
   ref <- subset(ref, select.nonsaturating)
@@ -122,11 +124,26 @@ spectracle <- function(
   flowstate::select_singlets(ref, quantiles = c(0.85, 0.975))#@params
   ref <- subset(ref, select.singlets)
   ref$data[, select.singlets := NULL]
+  ## bead-specific preprocessing
+  if("Beads" %in% ref$data[, levels(tissue.type)]){
+    ref$data[
+      i = tissue.type != "Beads",
+      j = select.beads := TRUE
+    ]
+    ref$data[
+      i = tissue.type == "Beads",
+      j = select.beads := {
+        bounds.fsc <- peak.bounds(FSC_A, height.threshold = 0.1)
+        bounds.ssc <- peak.bounds(SSC_A, height.threshold = 0.1)
+        data.table::`%between%`(FSC_A, bounds.fsc) & data.table::`%between%`(SSC_A, bounds.ssc)
+      },
+      by = c(vars$cols.by)
+    ]
+    ref <- subset(ref, select.beads)
+    ref$data[, select.beads := NULL]
+  }
 
   tictoc::toc(log = TRUE, quiet = TRUE)
-
-  ## variables needed
-  vars <- get.vars(ref)
 
   tictoc::tic("autofluorescence -- characterizing")
 
@@ -147,106 +164,129 @@ spectracle <- function(
 
   tictoc::tic("removing AF vector (projection-based orthogonalization) and deriving peak detector")
 
-  ## METHOD -- projection-based orthogonalization (googled this term for R code...)
-  ## normalize the (intrusive/nuisance) vector
-  v <- af.signatures[
-    i = tissue.type == "Cells" & vector.type == 'mean',
-    j = unlist(.SD),
-    .SDcols = is.numeric
-  ]
-  v_unit <- v / sqrt(sum(v^2))
-  v_unit_t <- t(v_unit)
+  ### START peak detector
+
+  ## for 'Cells'
+  if('Cells' %in% ref$data[, levels(tissue.type)]){
+    ## METHOD -- projection-based orthogonalization (googled this term for R code...)
+    ## normalize the (intrusive/nuisance) vector
+    v <- af.signatures[
+      i = tissue.type == "Cells" & vector.type == 'mean',
+      j = unlist(.SD),
+      .SDcols = is.numeric
+    ]
+    v_unit <- v / sqrt(sum(v^2))
+    v_unit_t <- t(v_unit)
+  }
   ## apply METHOD to [['data']];
   ## UPDATES BY REFERENCE
   ref$data[
-    i = N != 'AF' & tissue.type == "Cells",
+    i = N != 'AF',# & tissue.type == "Cells",
     j = detector := {
-      ## the internal bits are vectorized here (I think...);
-      ## possible speed gain with another projection method; lm/residuals?
-      ## matrix operation -- .SD as matrix
-      mat <- as.matrix(.SD)
-      ## calculate the projection of each row onto vector and subtract it
-      ## matrix multiplication -- remove AF/nuisance vector
-      mat_cleaned <- mat - (mat %*% v_unit) %*% v_unit_t
-      ## peak detector derived from 'mat_cleaned'
-      ## UPDATES BY REFERENCE in [['data']]
-      detector.peak <- names(which.max(apply(mat_cleaned, 2, mean)))
-      ##
+      if(.BY$tissue.type == 'Cells'){
+        ## the internal bits are vectorized here (I think...);
+        ## possible speed gain with another projection method; lm/residuals?
+        ## matrix operation -- .SD as matrix
+        mat <- as.matrix(.SD)
+        ## calculate the projection of each row onto vector and subtract it
+        ## matrix multiplication -- remove AF/nuisance vector
+        mat_cleaned <- mat - (mat %*% v_unit) %*% v_unit_t
+        ## peak detector derived from 'mat_cleaned'
+        ## UPDATES BY REFERENCE in [['data']]
+        detector.peak <- names(which.max(apply(mat_cleaned, 2, mean)))
+        ##
+      }else if(.BY$tissue.type == 'Beads'){
+        names(which.max(sapply(.SD, mean)))
+      }
     },
     .SDcols = vars$detectors,
     by = c(vars$cols.by)
   ]
 
+  ## END peak detector
+
   tictoc::toc(log = TRUE, quiet = TRUE)
 
   tictoc::tic("ordering peak detector vectors to select top expressing ('spectral') events")
+
+  ## START 'spectral.events'
 
   ## add 'spectral.events' logical to [['data']]
   ## UPDATES BY REFERENCE
   ref$data[, spectral.events := FALSE]
   ## set 'AF' as TRUE
   ref$data[
-    i = N == "AF" & tissue.type == "Cells",
+    i = N == "AF",
     j = spectral.events := TRUE
   ]
-  ## 'AF' median vector for inside the data.table loop
-  v.median <- af.signatures[
-    i = tissue.type == "Cells" & vector.type == 'median',
-    j = unlist(.SD),
-    .SDcols = is.numeric
-  ]
+  ## for 'Cells'
+  if('Cells' %in% ref$data[, levels(tissue.type)]){
+    ## 'AF' median vector for inside the data.table loop -- 'Cells'
+    v.median <- af.signatures[
+      i = tissue.type == "Cells" & vector.type == 'median',
+      j = unlist(.SD),
+      .SDcols = is.numeric
+    ]
+  }
   ##
   ref$data[
-    i = N != "AF" & tissue.type == "Cells",
+    i = N != "AF",# & tissue.type == "Cells",
     j = spectral.events := {
-      ## basic vector sorting for top (peak detector) expressing events
-      detector <- as.character(.BY$detector)
-      ## index the top (peak detector) expressing events -- 1000
-      i.top <- order(.SD[[detector]], decreasing = T)[1:1000]
-      ## cosine similarity against af.vector
-      i.cs <- cosine.similarity.mat(
-        x = as.matrix(.SD[i.top]),
-        reference.vector = v.median
-      )
-      ## set top n expressing events
-      n <- 200
-      if (!is.null(top.expressing.override)) {
-        id <- as.character(.BY$sample.id)
-        if (id %in% names(top.expressing.override)) {
-          n <- top.expressing.override[[id]]
+      if(.BY$tissue.type == 'Cells'){
+        ## basic vector sorting for top (peak detector) expressing events
+        detector <- as.character(.BY$detector)
+        ## index the top (peak detector) expressing events -- 1000
+        i.top <- order(.SD[[detector]], decreasing = T)[1:1000]
+        ## cosine similarity against af.vector
+        i.cs <- cosine.similarity.mat(
+          x = as.matrix(.SD[i.top]),
+          reference.vector = v.median
+        )
+        ## set top n expressing events
+        n <- 200
+        if (!is.null(top.expressing.override)) {
+          id <- as.character(.BY$sample.id)
+          if (id %in% names(top.expressing.override)) {
+            n <- top.expressing.override[[id]]
+          }
         }
-      }
-      ## re-index -- lowest cosine score
-      i.top <- i.top[order(i.cs)][1:n]
+        ## re-index -- lowest cosine score
+        i.top <- i.top[order(i.cs)][1:n]
 
-      if (!is.null(filter.top.expressing)) {
-        id <- as.character(.BY$sample.id)
-        if (id %in% filter.top.expressing) {
-          ## a final (final?) filter
-          i.max <- which.max(.SD[i.top][[detector]])
-          i.cs <- cosine.similarity.mat(
-            x = as.matrix(.SD[i.top]),
-            reference.vector = unlist(.SD[i.top][i.max])
-          )
-          i.top <- i.top[which(i.cs > 0.99)]
+        if (!is.null(filter.top.expressing)) {
+          id <- as.character(.BY$sample.id)
+          if (id %in% filter.top.expressing) {
+            ## a final (final?) filter
+            i.max <- which.max(.SD[i.top][[detector]])
+            i.cs <- cosine.similarity.mat(
+              x = as.matrix(.SD[i.top]),
+              reference.vector = unlist(.SD[i.top][i.max])
+            )
+            i.top <- i.top[which(i.cs > 0.99)]
+          }
         }
+
+        # n <- length(i.top)
+        # r <- range(.SD[i.top])
+        # colors <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(11, "RdYlBu"))(n)
+        # colors <- rev(colors)
+        # for(i in seq(n)){
+        #   plot_spectral.trace.base(
+        #     unlist(.SD[i.top[i]]),
+        #     ylim = r,
+        #     add.lines = isTRUE(i != 1),
+        #     col = colors[i],
+        #     sub = sprintf("Detector (peak): %s", detector)
+        #     # ...
+        #   )
+        # }
+
+      }else if(.BY$tissue.type == 'Beads'){
+        ## basic vector sorting for top (peak detector) expressing events
+        detector <- as.character(.BY$detector)
+        ## index the top (peak detector) expressing events -- 200
+        i.top <- order(.SD[[detector]], decreasing = T)[1:200]
       }
-
-      # n <- length(i.top)
-      # r <- range(.SD[i.top])
-      # colors <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(11, "RdYlBu"))(n)
-      # colors <- rev(colors)
-      # for(i in seq(n)){
-      #   plot_spectral.trace.base(
-      #     unlist(.SD[i.top[i]]),
-      #     ylim = r,
-      #     add.lines = isTRUE(i != 1),
-      #     col = colors[i],
-      #     sub = sprintf("Detector (peak): %s", detector)
-      #     # ...
-      #   )
-      # }
-
       ## index and set the logical
       spectral.events[i.top] <- TRUE
       ## return the logical
@@ -255,11 +295,16 @@ spectracle <- function(
     .SDcols = vars$detectors,
     by = c(vars$cols.by, 'detector')
   ]
+
   ## subset ref to retain only spectral events
   ref.spectral <- subset(ref, spectral.events)
+  ref.spectral$data[, spectral.events := NULL]
   ## CONDITIONAL: if 'ref' is not needed (no return), rm and gc
   rm(ref) ; invisible(gc())
-  ## update peak detector; some fluors/peak detectors are fully resolved at this point
+
+  ## END 'spectral.events'
+
+  ## update peak detector; some fluors/peak detectors are fully resolved at this point -- 'Cells'
   ref.spectral$data[
     i = N != "AF" & tissue.type == "Cells",
     j = detector := {
@@ -271,80 +316,96 @@ spectracle <- function(
 
   tictoc::toc(log = TRUE, quiet = TRUE)
 
-  tictoc::tic("AF scatter matching using nearest neighbors")
+  ## for 'Cells' only
+  if('Cells' %in% ref.spectral$data[, levels(tissue.type)]){
 
-  ## prepare AF subsets for eventual scatter-matching/subtraction
-  af.sub       <- subset(ref.spectral, N == "AF" & tissue.type == "Cells")[["data"]]
-  af.scatter   <- af.sub[, .SD, .SDcols = vars$scatter]
-  af.detectors <- af.sub[, .SD, .SDcols = vars$detectors]
-  rm(af.sub)
+    tictoc::tic("AF scatter matching using nearest neighbors")
 
-  k        <- 2L  #@params
-  cols.nni <- paste0("nni.", seq_len(k))
+    ## prepare AF subsets for eventual scatter-matching/subtraction
+    af.sub       <- subset(ref.spectral, N == "AF" & tissue.type == "Cells")[["data"]]
+    af.scatter   <- af.sub[, .SD, .SDcols = vars$scatter]
+    af.detectors <- af.sub[, .SD, .SDcols = vars$detectors]
+    rm(af.sub)
 
-  ## single-pass KNN across all non-AF events
-  all.spectral.scatter <- ref.spectral$data[
-    i = N != "AF" & tissue.type == 'Cells',
-    j = .SD,
-    .SDcols = vars$scatter
-  ]# this might create a copy in memory; need to check mem address
-  all.nni <- FNN::knnx.index(
-    data  = as.matrix(af.scatter),
-    query = as.matrix(all.spectral.scatter),
-    k     = k
-  )
+    k        <- 2L  #@params
+    cols.nni <- paste0("nni.", seq_len(k))
 
-  ref.spectral$data[
-    i = N != "AF" & tissue.type == 'Cells',
-    (cols.nni) := as.data.frame(all.nni)
-  ]
-  rm(all.spectral.scatter, all.nni)
+    ## single-pass KNN across all non-AF events
+    all.spectral.scatter <- ref.spectral$data[
+      i = N != "AF" & tissue.type == 'Cells',
+      j = .SD,
+      .SDcols = vars$scatter
+    ]# this might create a copy in memory; need to check mem address
+    all.nni <- FNN::knnx.index(
+      data  = as.matrix(af.scatter),
+      query = as.matrix(all.spectral.scatter),
+      k     = k
+    )
 
-  tictoc::toc(log = TRUE, quiet = TRUE)
+    ref.spectral$data[
+      i = N != "AF" & tissue.type == 'Cells',
+      (cols.nni) := as.data.frame(all.nni)
+    ]
+    rm(all.spectral.scatter, all.nni)
 
-  tictoc::tic("AF medians matching")
+    tictoc::toc(log = TRUE, quiet = TRUE)
 
-  ## 2) median for each group/row of points in 'nni' to derive scatter-matched 'af.detectors' vectors
-  ## replaced with vectorised matrix indexing -- for k=2 the median of two values equals their mean
-  af.det.mat <- as.matrix(af.detectors[, .SD, .SDcols = vars$detectors])
-  n.det    <- ncol(af.det.mat)
-  af.medians <- ref.spectral$data[
-    i = N != "AF" & tissue.type == 'Cells',
-    j = {
-      nni.mat  <- as.matrix(.SD)# .N x k: each row = neighbor indices
-      af.med   <- matrix(0, .N, n.det)
-      for (ki in seq_len(k)) {
-        af.med <- af.med + af.det.mat[nni.mat[, ki], , drop = FALSE]
-      }
-      af.med <- af.med / k# mean for k = 2; k is fixed for now
-      colnames(af.med) <- vars$detectors
-      cbind(
-        data.table::data.table(group = seq_len(.N)),
-        data.table::as.data.table(af.med))
-    },
-    .SDcols = cols.nni,
-    by = c(vars$cols.by, 'detector')
-  ]
+    tictoc::tic("AF medians matching")
 
-  tictoc::toc(log = TRUE, quiet = TRUE)
+    ## 2) median for each group/row of points in 'nni' to derive scatter-matched 'af.detectors' vectors
+    ## replaced with vectorised matrix indexing -- for k=2 the median of two values equals their mean
+    af.det.mat <- as.matrix(af.detectors[, .SD, .SDcols = vars$detectors])
+    n.det    <- ncol(af.det.mat)
+    af.medians <- ref.spectral$data[
+      i = N != "AF" & tissue.type == 'Cells',
+      j = {
+        nni.mat  <- as.matrix(.SD)# .N x k: each row = neighbor indices
+        af.med   <- matrix(0, .N, n.det)
+        for (ki in seq_len(k)) {
+          af.med <- af.med + af.det.mat[nni.mat[, ki], , drop = FALSE]
+        }
+        af.med <- af.med / k# mean for k = 2; k is fixed for now
+        colnames(af.med) <- vars$detectors
+        cbind(
+          data.table::data.table(group = seq_len(.N)),
+          data.table::as.data.table(af.med))
+      },
+      .SDcols = cols.nni,
+      by = c(vars$cols.by, 'detector')
+    ]
+
+    tictoc::toc(log = TRUE, quiet = TRUE)
+  }
 
   tictoc::tic("AF medians subtraction and deriving of spectra")
 
+  ## START AF/background subtraction; normalized spectra
+
   ## 3) subtract out the matched AF vectors (rows); medians for linear vector; normalize
   spectra <- ref.spectral$data[
-    i = N != "AF" & tissue.type == 'Cells',
+    i = N != "AF", #& tissue.type == 'Cells',
     j = {
-      ## 3 CONDITIONAL) af.medians (matched to sample) can have fewer rows due to duplicate nni matches;
-      ## get the group index to drop rows in .SD so they match up for subtraction
-      i.group <- af.medians[i = sample.id == .BY$sample.id, group]
-      spectral.vec.linear <- sapply(
-        (.SD[i.group] - af.medians[
-          i = sample.id == .BY$sample.id,
-          j = .SD,
+      if(.BY$tissue.type == 'Cells'){
+        ## 3 CONDITIONAL) af.medians (matched to sample) can have fewer rows due to duplicate nni matches;
+        ## get the group index to drop rows in .SD so they match up for subtraction
+        i.group <- af.medians[i = sample.id == .BY$sample.id, group]
+        spectral.vec.linear <- sapply(
+          (.SD[i.group] - af.medians[
+            i = sample.id == .BY$sample.id,
+            j = .SD,
+            .SDcols = vars$detectors
+          ]),
+          stats::median
+        )
+      }else if(.BY$tissue.type == "Beads"){
+        vec <- af.signatures[
+          i = tissue.type == "Beads" & vector.type == 'median',
+          j = unlist(.SD),
           .SDcols = vars$detectors
-        ]),
-        stats::median
-      )
+        ]
+        ##
+        spectral.vec.linear <- sapply((.SD - vec), stats::median)
+      }
       spectral.vec.norm <- spectral.vec.linear / max(spectral.vec.linear)
       spectral.vec.norm[spectral.vec.norm < 0] <- 0
       as.list(spectral.vec.norm)
@@ -352,6 +413,8 @@ spectracle <- function(
     .SDcols = vars$detectors,
     by = c(vars$cols.by, 'detector')
   ]
+
+  ## END AF/background subtraction; normalized spectra
 
   tictoc::toc(log = TRUE, quiet = TRUE)
 
@@ -362,7 +425,7 @@ spectracle <- function(
   spectra <- rbind(
     spectra,
     af.signatures[
-      i = tissue.type == 'Cells' & vector.type == 'median',
+      i = tissue.type %in% spectra[, levels(tissue.type)] & vector.type == 'median',
       j = !'vector.type'
     ]
   )
