@@ -30,3 +30,4 @@ Imports:
 Depends: R (>= 4.2.0)
 URL: https://github.com/nlaniewski/spectracle
 BugReports: https://github.com/nlaniewski/spectracle/issues
+LazyData: true

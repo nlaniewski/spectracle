@@ -4,14 +4,35 @@
 \alias{plot_trace}
 \title{Plot a Spectral Trace}
 \usage{
-plot_trace(spectra)
+plot_trace(spectra, benchmark = FALSE)
 }
 \arguments{
 \item{spectra}{\link[data.table:data.table]{data.table} -- the return of \link{spectracle}.}
+
+\item{benchmark}{logical -- default \code{FALSE}; if \code{TRUE}, derived spectra will be benchmarked against an internal reference library and the closest match (cosine similarity) will be reported as both a black, dashed trace and caption text.}
 }
 \value{
 A plot is printed to the active device.
 }
 \description{
 Plot a Spectral Trace
+}
+\examples{
+
+## due to large file sizes, the .fcs files used in this example were first
+## fully processed -- spectra was derived and saved; load here
+
+spectra.files <- list.files(
+system.file("extdata/prepared_spectra", package = "spectracle"),
+full.names = TRUE
+)
+names(spectra.files) <- sub(".rds", "", basename(spectra.files))
+
+spectra.examples <- lapply(spectra.files, readRDS)
+
+spectra <- spectra <- spectra.examples$spectra_expt2
+
+plot_trace(spectra[sample.id == "CD16 BUV496 (Cells)"])
+plot_trace(spectra[sample.id == "CD16 BUV496 (Cells)"], benchmark = TRUE)
+
 }

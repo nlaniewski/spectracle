@@ -42,12 +42,30 @@ plot_spectral.trace.base <- function(x, add.lines = F, ...){
 #' @title Plot a Spectral Trace
 #'
 #' @param spectra [data.table][data.table::data.table] -- the return of [spectracle].
+#' @param benchmark logical -- default `FALSE`; if `TRUE`, derived spectra will be benchmarked against an internal reference library and the closest match (cosine similarity) will be reported as both a black, dashed trace and caption text.
 #'
 #' @returns
 #' A plot is printed to the active device.
 #' @export
+#' @examples
 #'
-plot_trace <- function(spectra){
+#' ## due to large file sizes, the .fcs files used in this example were first
+#' ## fully processed -- spectra was derived and saved; load here
+#'
+#' spectra.files <- list.files(
+#' system.file("extdata/prepared_spectra", package = "spectracle"),
+#' full.names = TRUE
+#' )
+#' names(spectra.files) <- sub(".rds", "", basename(spectra.files))
+#'
+#' spectra.examples <- lapply(spectra.files, readRDS)
+#'
+#' spectra <- spectra <- spectra.examples$spectra_expt2
+#'
+#' plot_trace(spectra[sample.id == "CD16 BUV496 (Cells)"])
+#' plot_trace(spectra[sample.id == "CD16 BUV496 (Cells)"], benchmark = TRUE)
+#'
+plot_trace <- function(spectra, benchmark = FALSE){
   ##
   res.mdat <- all(mtext.keywords %in% names(spectra))
   if(res.mdat){
@@ -63,6 +81,10 @@ plot_trace <- function(spectra){
       .SDcols = mtext.keywords,
       by = sample.id
     ]
+  }
+  ##
+  if(benchmark){
+    .benchmark <- spectra.benchmark(spectra)
   }
   ##
   spectra[
@@ -84,12 +106,58 @@ plot_trace <- function(spectra){
           side = 1, line = 4, adj = 0, cex = 0.75
         )
       }
+      if(benchmark){
+        bm <- .benchmark[i = sample.id == .BY$sample.id]
+        trace.benchmark <- (
+          bm[,!'cosine.similarity']
+          [, unlist(.SD), .SDcols = is.numeric]
+        )
+        ##
+        graphics::lines(trace.benchmark, lty = "dashed")
+        ##
+        cs <- bm[['cosine.similarity']]
+        fluor <- bm[['fluorochrome']]
+        match <- sprintf("Benchmark Match: Fluor (cosine similarity) -- %s (%s)",
+                         fluor, cs)
+        ##
+        graphics::mtext(match, side = 1, line = 4, adj = 1, cex = 0.75)
+      }
     },
     .SDcols = is.numeric,
     by = c(spectra[, names(.SD), .SDcols = is.factor])
   ]
   ##
   invisible()
+}
+
+spectra.benchmark <- function(spectra){
+  ##
+  cyt <- spectra[, unique(`$CYT`)]
+  spectra.library <- grep(
+    cyt,
+    list.files(
+      system.file("extdata/spectra_library", package = "spectracle"),
+      full.names = T, pattern = ".rds"
+    ),
+    ignore.case = T,
+    value = T
+  )
+  spectra.library <- readRDS(spectra.library)
+  spectra.library.mat <- as.matrix(spectra.library[, .SD, .SDcols = is.numeric])
+  ##
+  benchmark <- spectra[
+    ,
+    j = {
+      res <- cosine.similarity.mat(
+        x = spectra.library.mat,
+        reference.vector =  unlist(.SD)
+      )
+      cs <- round(sort(res, decreasing = T)[1], 5)
+      c(cosine.similarity = cs, spectra.library[which.max(res)])
+    },
+    .SDcols = is.numeric,
+    by = sample.id
+  ]
 }
 
 ## helper function: quantile filtering of cosine similarity scores

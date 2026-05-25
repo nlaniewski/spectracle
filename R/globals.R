@@ -9,6 +9,7 @@ utils::globalVariables(
       "select.nonsaturating", "select.singlets", "tissue.type"),
     c(".mtext", "CREATOR", "hash.md5", "vars"),
     c('vector.type'),
-    c('FSC_A', 'SSC_A', 'select.beads')
+    c('FSC_A', 'SSC_A', 'select.beads'),
+    c('$CYT')
   )
 )

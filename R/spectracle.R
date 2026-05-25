@@ -18,52 +18,42 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' raw.reference.controls <- fcs.files <- list.files(
-#' system.file("extdata/expt1", package = "spectracle"),
+#'
+#' ## due to large file sizes, the .fcs files used in this example were first
+#' ## fully processed -- spectra was derived and saved; load here
+#'
+#' spectra.files <- list.files(
+#' system.file("extdata/prepared_spectra", package = "spectracle"),
 #' full.names = TRUE
 #' )
+#' names(spectra.files) <- sub(".rds", "", basename(spectra.files))
 #'
-#' spectra <- spectracle(raw.reference.controls)
+#' spectra.examples <- lapply(spectra.files, readRDS)
 #'
-#' ## name fix due to no marker '$PnS' names in these source files
-#' ## add empirically determined marker names
-#' spectra[
-#' i = N == '450',
-#' j = c('N', 'S') := list('eFluor 450', 'TCRgd')
-#' ]
-#' spectra[
-#' i = N == 'BUV615',
-#' j = c('N', 'S') := list('BUV615', 'Siglec F')
-#' ]
+#' ## expt1
 #'
-#' ##
+#' spectra <- spectra.examples$spectra_expt1_nofilter
 #' plot_trace(spectra[N == "eFluor 450"])
 #'
 #' ## this particular control is low-event count/rare
 #' ## impacted by AF -- the spectra is off...
 #' plot_trace(spectra[N == "BUV615"])
 #'
-#' ## ...rerun with a small tweak
-#' spectra <- spectracle(
-#' raw.reference.controls[c(1,3)],
-#' filter.top.expressing = c("BUV615 (Cells)")
-#' )
+#' ## ...rerun with a small tweak using:
+#' ## `filter.top.expressing = c("BUV615 (Cells)")`
+#' spectra <- spectra.examples$spectra_expt1_filtered
 #'
 #' ## spectra is derived
 #' plot_trace(spectra[N == "BUV615"])
-#' }
 #'
-#' \dontrun{
-#' raw.reference.controls <- fcs.files <- list.files(
-#' system.file("extdata/expt2", package = "spectracle"),
-#' full.names = TRUE
-#' )
 #'
-#' spectra <- spectracle(raw.reference.controls)
+#' ## expt2 -- beads and cells
+#' spectra <- spectra <- spectra.examples$spectra_expt2
+#'
+#' plot_trace(spectra)
+#'
 #' spectra[, .(N, hash.md5)]
 #'
-#' }
 spectracle <- function(
     raw.reference.controls,
     filter.top.expressing = NULL,

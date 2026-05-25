@@ -6,3 +6,4 @@
 ^README\.Rmd$
 ^inst/extdata/expt1$
 ^inst/extdata/expt2$
+^data-raw$
