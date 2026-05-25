@@ -4,6 +4,12 @@
 # dput(sort(c(...)))
 # c(...) |> sort() |> dput()
 utils::globalVariables(
-  c("N", "TYPE", "detector", "group", "laser", "ord", "sample.id",
-    "select.nonsaturating", "select.singlets", "tissue.type")
+  c(
+    c("N", "TYPE", "detector", "group", "laser", "ord", "sample.id",
+      "select.nonsaturating", "select.singlets", "tissue.type"),
+    c(".mtext", "CREATOR", "hash.md5", "vars"),
+    c('vector.type'),
+    c('FSC_A', 'SSC_A', 'select.beads'),
+    c('$CYT')
+  )
 )
