@@ -1,3 +1,5 @@
+mtext.keywords <- c("$DATE", "$CYT", "$CYTSN", "CREATOR", "$PROJ")
+
 get.vars <- function(flowstate) {
   cols.by <- flowstate$data[, names(.SD), .SDcols = is.factor]
   detectors.pn <- flowstate$parameters[TYPE == "Raw_Fluorescence", N]
@@ -19,14 +21,6 @@ get.vars <- function(flowstate) {
   )
 }
 
-
-
-
-
-
-
-
-
 remove.saturating.doublets <- function(flowstate){
   ## remove saturating events
   flowstate::select_nonsaturating(flowstate)
@@ -38,4 +32,26 @@ remove.saturating.doublets <- function(flowstate){
   flowstate$data[, select.singlets := NULL]
   ##
   invisible(flowstate)
+}
+
+.af.signatures <- function(flowstate){
+  vars <- get.vars(flowstate)
+  ## autofluorescence -- generalized (for now);
+  ## mean and median vectors (mean)
+  flowstate$data[
+    i = N == "AF",
+    j = {
+      .mean <- lapply(.SD, mean)
+      .median <- lapply(.SD, stats::median)
+      ##
+      data.table::rbindlist(
+        list(
+          c(detector = names(which.max(.mean)), .mean, vector.type = "mean"),
+          c(detector = names(which.max(.median)), .median, vector.type = "median")
+        )
+      )
+    },
+    .SDcols = vars$detectors,
+    by = c(vars$cols.by)
+  ][, detector := factor(detector, levels = vars$detectors)][]
 }

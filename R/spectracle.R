@@ -54,6 +54,16 @@
 #' plot_trace(spectra[N == "BUV615"])
 #' }
 #'
+#' \dontrun{
+#' raw.reference.controls <- fcs.files <- list.files(
+#' system.file("extdata/expt2", package = "spectracle"),
+#' full.names = TRUE
+#' )
+#'
+#' spectra <- spectracle(raw.reference.controls)
+#' spectra[, .(N, hash.md5)]
+#'
+#' }
 spectracle <- function(
     raw.reference.controls,
     filter.top.expressing = NULL,
@@ -116,42 +126,21 @@ spectracle <- function(
   tictoc::toc(log = TRUE, quiet = TRUE)
 
   ## variables needed
-  var <- get.vars(ref)
-  # cols.by <- ref$data[, names(.SD), .SDcols = is.factor]
-  # detectors.pn <- ref$parameters[TYPE == "Raw_Fluorescence", N]
-  # cols.detector <- names(ref$data)[ref$data[, sapply(.SD, attr, 'N') %in% detectors.pn]]
-  # cols.scatter <- grep("[FS]SC", names(ref$data), value = T)
-  # cols.mdat <- names(ref$keywords)[names(ref$keywords) %in% c('$CYT', '$CYTSN', 'CREATOR', '$PROJ', '$DATE')]
-  # mdat <- ref$keywords[, unique(.SD), .SDcols = cols.mdat]
+  vars <- get.vars(ref)
 
   tictoc::tic("autofluorescence -- characterizing")
 
-  ## autofluorescence -- generalized; vector (mean)
-  af.vec.mean <- ref$data[
-    i = N == "AF" & tissue.type == "Cells",
-    j = {
-      res <- lapply(.SD, mean)
-      c(res, detector = names(which.max(res)))
-    },
-    .SDcols = vars$detectors,
-    by = c(vars$cols.by)
-  ][, detector := factor(detector, levels = vars$detectors)]
-  ## autofluorescence -- generalized; vector (median)
-  ## for adding to spectra during final output
-  af.vec.median <- ref$data[
-    i = N == "AF" & tissue.type == "Cells",
-    j = {
-      res <- lapply(.SD, stats::median)
-      c(res, detector = names(which.max(res)))
-    },
-    .SDcols = vars$detectors,
-    by = c(vars$cols.by)
-  ][, detector := factor(detector, levels = vars$detectors)]
+  ## autofluorescence -- generalized (for now);
+  ## mean and median vectors (mean)
+  af.signatures <- .af.signatures(ref)
+
   ## add dominant AF detector to [['data']]
   ## UPDATES BY REFERENCE
   ref$data[
-    i = N == "AF" & tissue.type == "Cells",
-    j = detector := af.vec.mean[N == "AF" & tissue.type == 'Cells'][['detector']]
+    i = N == "AF",
+    j = detector := af.signatures[
+      i = tissue.type == .BY$tissue.type & vector.type == 'mean'][['detector']],
+    by = c(vars$cols.by)
   ]
 
   tictoc::toc(log = TRUE, quiet = TRUE)
@@ -160,7 +149,11 @@ spectracle <- function(
 
   ## METHOD -- projection-based orthogonalization (googled this term for R code...)
   ## normalize the (intrusive/nuisance) vector
-  v <- af.vec.mean[, unlist(.SD), .SDcols = is.numeric]
+  v <- af.signatures[
+    i = tissue.type == "Cells" & vector.type == 'mean',
+    j = unlist(.SD),
+    .SDcols = is.numeric
+  ]
   v_unit <- v / sqrt(sum(v^2))
   v_unit_t <- t(v_unit)
   ## apply METHOD to [['data']];
@@ -191,9 +184,16 @@ spectracle <- function(
   ## add 'spectral.events' logical to [['data']]
   ## UPDATES BY REFERENCE
   ref$data[, spectral.events := FALSE]
+  ## set 'AF' as TRUE
   ref$data[
     i = N == "AF" & tissue.type == "Cells",
     j = spectral.events := TRUE
+  ]
+  ## 'AF' median vector for inside the data.table loop
+  v.median <- af.signatures[
+    i = tissue.type == "Cells" & vector.type == 'median',
+    j = unlist(.SD),
+    .SDcols = is.numeric
   ]
   ##
   ref$data[
@@ -206,7 +206,7 @@ spectracle <- function(
       ## cosine similarity against af.vector
       i.cs <- cosine.similarity.mat(
         x = as.matrix(.SD[i.top]),
-        af.vec.median[, unlist(.SD), .SDcols = is.numeric]
+        reference.vector = v.median
       )
       ## set top n expressing events
       n <- 200
@@ -359,7 +359,13 @@ spectracle <- function(
 
   ## prepare spectra for final output
   ## exhaustive metadata can/should be added for reproducibility/transparency
-  spectra <- rbind(spectra, af.vec.median)
+  spectra <- rbind(
+    spectra,
+    af.signatures[
+      i = tissue.type == 'Cells' & vector.type == 'median',
+      j = !'vector.type'
+    ]
+  )
   spectra[
     ,
     laser := factor(

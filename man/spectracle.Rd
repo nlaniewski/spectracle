@@ -71,4 +71,14 @@ filter.top.expressing = c("BUV615 (Cells)")
 plot_trace(spectra[N == "BUV615"])
 }
 
+\dontrun{
+raw.reference.controls <- fcs.files <- list.files(
+system.file("extdata/expt2", package = "spectracle"),
+full.names = TRUE
+)
+
+spectra <- spectracle(raw.reference.controls)
+spectra[, .(N, hash.md5)]
+
+}
 }
