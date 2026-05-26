@@ -1,5 +1,0 @@
-url: ~
-template:
-  bootstrap: 5
-project:
-  execute-dir: project
