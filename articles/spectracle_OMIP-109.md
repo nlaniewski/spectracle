@@ -147,9 +147,9 @@ data.frame(
 
 ## Derive Spectra
 
-[`spectracle()`](../reference/spectracle.md) is fully automated and by
-design has limited function arguments; simply pass the directory where
-the source files are contained.
+[`spectracle()`](https://nlaniewski.github.io/spectracle/reference/spectracle.md)
+is fully automated and by design has limited function arguments; simply
+pass the directory where the source files are contained.
 
 ``` r
 
@@ -159,7 +159,8 @@ spectra <- res$spectra
 
 ### Spectra – OMIP-109
 
-[`spectracle()`](../reference/spectracle.md) returns a standardized
+[`spectracle()`](https://nlaniewski.github.io/spectracle/reference/spectracle.md)
+returns a standardized
 [`data.table::data.table()`](https://rdrr.io/pkg/data.table/man/data.table.html)
 containing relevant metadata:
 

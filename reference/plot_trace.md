@@ -13,7 +13,8 @@ plot_trace(spectra, benchmark = FALSE)
 - spectra:
 
   [data.table](https://rdrr.io/pkg/data.table/man/data.table.html) – the
-  return of [spectracle](spectracle.md).
+  return of
+  [spectracle](https://nlaniewski.github.io/spectracle/reference/spectracle.md).
 
 - benchmark:
 

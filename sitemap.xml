@@ -1,13 +1,13 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
-<url><loc>/404.html</loc></url>
-<url><loc>/LICENSE.html</loc></url>
-<url><loc>/articles/index.html</loc></url>
-<url><loc>/articles/spectracle_OMIP-109.html</loc></url>
-<url><loc>/authors.html</loc></url>
-<url><loc>/index.html</loc></url>
-<url><loc>/reference/index.html</loc></url>
-<url><loc>/reference/plot_trace.html</loc></url>
-<url><loc>/reference/spectracle-package.html</loc></url>
-<url><loc>/reference/spectracle.html</loc></url>
+<url><loc>https://nlaniewski.github.io/spectracle/404.html</loc></url>
+<url><loc>https://nlaniewski.github.io/spectracle/LICENSE.html</loc></url>
+<url><loc>https://nlaniewski.github.io/spectracle/articles/index.html</loc></url>
+<url><loc>https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-109.html</loc></url>
+<url><loc>https://nlaniewski.github.io/spectracle/authors.html</loc></url>
+<url><loc>https://nlaniewski.github.io/spectracle/index.html</loc></url>
+<url><loc>https://nlaniewski.github.io/spectracle/reference/index.html</loc></url>
+<url><loc>https://nlaniewski.github.io/spectracle/reference/plot_trace.html</loc></url>
+<url><loc>https://nlaniewski.github.io/spectracle/reference/spectracle-package.html</loc></url>
+<url><loc>https://nlaniewski.github.io/spectracle/reference/spectracle.html</loc></url>
 </urlset>
 

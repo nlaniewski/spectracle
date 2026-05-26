@@ -11,15 +11,13 @@ pak::pak("nlaniewski/spectracle")
 
 ## Notice
 
-Currently only working with cellular controls only.
-
-2026-05-23 – Currently only tested/working with
+2026-05-26 – Currently only tested/working with
 (Manufacturer::Instrument::Software):
 
-- Cytek::Aurora(5L)::SpectroFlo 3+ – cellular *(Cells)* controls only
+- Cytek::Aurora(5L)::SpectroFlo 3+ – *(Beads)* and *(Cells)* controls
   - OMIP-069
   - OMIP-069v2
-  - OMIP-109
+  - [OMIP-109](https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-109.md)
   - in-house datasets
 
 ## Making a Spectacle of Your Spectra
@@ -79,12 +77,14 @@ UV10::BUV615::Siglec F – normalized (0,1) spectra
 
 ## All functions
 
-- [`plot_trace()`](plot_trace.md) : Plot a Spectral Trace
-- [`spectracle()`](spectracle.md) : Derive Spectra from Full Spectrum
-  Cytometry Controls
+- [`plot_trace()`](https://nlaniewski.github.io/spectracle/reference/plot_trace.md)
+  : Plot a Spectral Trace
+- [`spectracle()`](https://nlaniewski.github.io/spectracle/reference/spectracle.md)
+  : Derive Spectra from Full Spectrum Cytometry Controls
 
 # Articles
 
 ### All vignettes
 
-- [spectracle -- OMIP-109](spectracle_OMIP-109.md):
+- [spectracle --
+  OMIP-109](https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-109.md):
