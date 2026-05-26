@@ -7,5 +7,10 @@
 .positai
 inst/extdata/expt1/
 inst/extdata/expt2/
+inst/extdata/OMIP-109_Raw_Reference Group/
 docs
 **/.quarto/
+
+inst/doc
+/doc/
+/Meta/
