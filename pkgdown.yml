@@ -1,5 +1,6 @@
 pandoc: 3.8.3
 pkgdown: 2.2.0
 pkgdown_sha: ~
-articles: {}
-last_built: 2026-05-26T21:06Z
+articles:
+  articles/spectracle_OMIP-109: spectracle_OMIP-109.html
+last_built: 2026-05-26T21:19Z
