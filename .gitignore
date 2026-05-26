@@ -5,3 +5,7 @@
 .DS_Store
 .quarto
 .positai
+inst/extdata/expt1/
+inst/extdata/expt2/
+docs
+**/.quarto/

@@ -28,6 +28,9 @@ Imports:
     RColorBrewer,
     tictoc
 Depends: R (>= 4.2.0)
-URL: https://github.com/nlaniewski/spectracle
+URL: https://github.com/nlaniewski/spectracle, https://nlaniewski.github.io/spectracle/
 BugReports: https://github.com/nlaniewski/spectracle/issues
 LazyData: true
+Suggests: 
+    quarto
+Config/Needs/website: quarto

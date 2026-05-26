@@ -7,3 +7,10 @@
 ^inst/extdata/expt1$
 ^inst/extdata/expt2$
 ^data-raw$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.github$
+^vignettes/articles/\.quarto$
+^vignettes/articles/*_files$
+^vignettes/articles$

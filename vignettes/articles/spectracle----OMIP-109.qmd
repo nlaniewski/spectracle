@@ -1,0 +1,203 @@
+---
+title: "spectracle -- OMIP-109"
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: '#>'
+format:
+  html:
+    df-print: paged
+---
+
+```{r}
+#| label: setup
+library(spectracle)
+```
+
+# Objective
+
+Derive spectra using OMIP-109 source data.
+
+# Source Data
+
+Source data as presented in [OMIP-109](http://www.ncbi.nlm.nih.gov/pubmed/39466962) is downloaded from its public repository:
+
+* [figshare -- OMIP-109](https://doi.org/10.6084/m9.figshare.25699221)
+
+```{r}
+#| label: source-data
+#| code-fold: true
+#| code-summary: "Click to see how OMIP-109 source data was obtained."
+
+## manually download or use this script
+
+## source directory; this path is user-dependent;
+## the author of this article previously downloaded these source files
+dir.source <- "W:/OMIP-109_flowstate/data_source/OMIP-XXX 45-Color Experiment 1/"
+
+
+## figshare name: 45-Color Full Spectrum Flow Cytometry Panel
+## Experiment ($PROJ) name: OMIP-XXX 45-Color Experiment 1
+## Size: 1.74 GB
+## MD5 checksum: 623c49ca26c4584a3bcc44b6a3fa5843
+## download link: https://ndownloader.figshare.com/files/45873810
+## Citation: Jaimes, Maria (2024). 45-Color Full Spectrum Flow Cytometry Panel. 
+## figshare. Dataset. https://doi.org/10.6084/m9.figshare.25699221.v1
+
+
+## test for existence and integrity of source files
+if(dir.exists(dir.source)){
+  digests <- sapply(list.files(dir.source, full.names = T, recursive = T),
+                    digest::digest,
+                    file = TRUE)
+  digest <- digest::digest(as.vector(digests))
+  if(digest != "4d9672f8142a8cde3aa7dfdf3833acc7"){
+    message("Digest of source files (.fcs) does not match historic value;\ndownloading source files...")
+    download.source <- TRUE
+  }else{
+    download.source <- FALSE
+  }
+}else{
+  download.source <- TRUE
+}
+if(download.source){
+  temp <- tempfile(tmpdir = "data_temp/", fileext = ".zip")
+  zip.link <- "https://ndownloader.figshare.com/files/45873810"
+  curl::curl_download(
+    url = zip.link,
+    destfile = temp,
+    quiet = FALSE,
+    mode = "wb"
+  )
+  ## check the hash
+  if (tools::md5sum(temp) != "623c49ca26c4584a3bcc44b6a3fa5843") {
+    stop("MD5 checksum (hash) of the downloaded .zip does not match the historic value.")
+  }
+  ## files contained in the .zip: 100 files;
+  ## Raw, Unmixed, and SpectroFlo software files (.Expt, .WTML, and .UST)
+  utils::unzip(temp, list = TRUE)
+  ## unzip to "./data_temp"
+  utils::unzip(temp, files = NULL, exdir = "./data_temp/")
+  ## get the original 'Project' ('$PROJ') name to reconstruct directory structure
+  proj <- "./data_temp/Raw/Reference Group/Unstained (Cells).fcs" |>
+    flowstate:::readFCStext() |>
+    flowstate:::keywords.to.data.table() |>
+    _[][['$PROJ']]
+  ## R scripts directory
+  dir.analysis <- file.path("R", proj)
+  if (!dir.exists(dir.analysis))
+    dir.create(dir.analysis)
+  ## create the source directory
+  dir.out <- file.path("data_source/", proj)
+  if (!dir.exists(dir.out))
+    dir.create(dir.out)
+  ## move the source .fcs files; Raw and Unmixed
+  fcs.to.move <- list.files(
+    "data_temp/",
+    full.names = T,
+    pattern = ".fcs",
+    recursive = T
+  )
+  dirnames <- dirname(fcs.to.move) |> unique()
+  sapply(dirnames, function(i) {
+    dir.out.sub <- sub("data_temp", dir.out, i)
+    if (!dir.exists(dir.out.sub))
+      dir.create(dir.out.sub, recursive = T)
+  }) |> invisible()
+  file.rename(from = fcs.to.move,
+              to = sub("data_temp", dir.out, fcs.to.move)) |> invisible()
+  ## move the SpectroFlo experiment files
+  dir.out.expt <- file.path(dir.out, "SpectroFlo_experiment")
+  if (!dir.exists(dir.out.expt))
+    dir.create(dir.out.expt)
+  files.to.move <- list.files("data_temp/", full.names = T, pattern = "Expt|UST|WTML")
+  file.rename(from = files.to.move,
+              to = sub("data_temp", dir.out.expt, files.to.move)) |> invisible()
+  ## cleanup
+  unlink(temp)
+  unlink("data_temp/Raw/", recursive = T)
+  unlink("data_temp/Unmixed//", recursive = T)
+}
+##
+```
+
+## Source Files -- Raw Reference Controls (Cells)
+
+```{r}
+#| label: source-data-raw-reference-files
+#| code-fold: true
+#| code-summary: "'./Raw/Reference Group' file paths"
+
+dir.source.raw <- grep("Raw.*Ref", list.dirs(dir.source), value = T)
+raw.reference.controls <- list.files(
+  dir.source.raw, 
+  full.names = T, 
+  pattern = ".fcs"
+)
+##
+data.frame(basename(raw.reference.controls))
+```
+
+# Derive Spectra
+
+`spectracle()` is fully automated and by design has limited function arguments; simply pass the directory where the source files are contained.
+
+```{r}
+#| label: spectracle
+
+spectra <- spectracle(dir.source.raw)
+```
+
+## Spectra -- OMIP-109
+
+`spectracle()` returns a standardized `data.table::data.table()` containing relevant metadata:
+
+* deriving function
+* date-of-acquisition
+* cytometer, serial number, software
+* sample identifier (sample name, fluor, marker/stain, peak detector, laser)
+* derived, normalized [0,1] spectra
+* hash summaries for each spectra
+
+```{r}
+#| label: spectra-omip109
+
+spectra[]
+```
+
+## Spectra -- Hashes
+
+Derived using a fully data-driven/automated process, the resultant spectra should reproduce given the same source data and function version.  A summary digest is generated from the individual hashes: 
+
+* Hash (md5) summary: `{r} spectra[, digest::digest(hash.md5)]`
+
+```{r}
+#| label: spectra-omip109-hashes
+
+spectra[, .(N, S, detector, hash.md5)]
+```
+
+## Spectra -- Traces
+
+```{r, results='asis', echo=FALSE}
+#| label: plot-traces
+#| 
+lasers <- spectra[, c(levels(laser), "AF")]
+spectra.list <- split(spectra[N != "AF"], by = 'laser')
+spectra.list[['AF']] <- spectra[N == "AF"]
+## each unique laser + AF as a tabset
+cat("::: {.panel-tabset}\n")
+for(.laser in lasers){
+  cat("\n###", .laser, "\n")
+  ## laser-specific trace plots as a tabset
+  cat("::: {.panel-tabset}\n")
+  for(id in spectra.list[[.laser]][, as.character(sample.id)]){#.names
+    cat("\n#### ", id, "\n")
+    plot_trace(spectra.list[[.laser]][sample.id == id])
+    cat("\n")
+  }
+  cat(":::\n")
+  cat("\n")
+}
+cat(":::\n")
+```

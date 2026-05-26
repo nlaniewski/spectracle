@@ -13,6 +13,7 @@ Fully automated derivation and characterization of spectra from full spectrum cy
 Useful links:
 \itemize{
   \item \url{https://github.com/nlaniewski/spectracle}
+  \item \url{https://nlaniewski.github.io/spectracle/}
   \item Report bugs at \url{https://github.com/nlaniewski/spectracle/issues}
 }
 
