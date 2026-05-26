@@ -11,6 +11,7 @@ knitr:
 format:
   html:
     df-print: paged
+lightbox: true
 ---
 
 ```{r}
@@ -131,7 +132,9 @@ if(download.source){
 
 ```{r}
 #| label: prepared-OMIP-109
+#| include: false
 
+## load the preprocessed data -- see /data-raw/prepared_spectra_OMIP-109.R
 res <- readRDS(
   system.file(
     "extdata/prepared_spectra/spectracle_OMIP-109.rds",
@@ -144,16 +147,28 @@ res <- readRDS(
 ## Source Files -- Raw Reference Controls (Cells)
 
 ```{r}
-#| label: source-data-raw-reference-files
+#| label: source-data-raw-reference-files-mock
 #| code-fold: true
 #| code-summary: "'./Raw/Reference Group' file paths"
+#| eval: false
 
-# dir.source.raw <- grep("Raw.*Ref", list.dirs(dir.source), value = T)
-# raw.reference.controls <- list.files(
-#   dir.source.raw, 
-#   full.names = T, 
-#   pattern = ".fcs"
-# )
+dir.source.raw <- grep("Raw.*Ref", list.dirs(dir.source), value = T)
+raw.reference.controls <- list.files(
+  dir.source.raw,
+  full.names = T,
+  pattern = ".fcs"
+)
+
+data.frame(
+  "./Raw/Reference Group/" = raw.reference.controls, 
+  check.names = F
+)
+```
+
+```{r}
+#| label: source-data-raw-reference-files-fromRDS
+#| include: false
+
 ##
 data.frame(
   "./Raw/Reference Group/" = res$raw.reference.controls, 
@@ -166,7 +181,15 @@ data.frame(
 `spectracle()` is fully automated and by design has limited function arguments; simply pass the directory where the source files are contained.
 
 ```{r}
-#| label: spectracle
+#| label: spectracle-mock
+#| eval: false
+
+spectra <- spectracle(dir.source.raw)
+```
+
+```{r}
+#| label: spectracle-fromRDS
+#| include: false
 
 # spectra <- spectracle(dir.source.raw)
 spectra <- res$spectra
@@ -212,9 +235,49 @@ spectra[, .(N, S, detector, hash.md5)]
 
 ## Spectra -- Traces
 
-```{r, results='asis', echo=FALSE}
+A few choice individual traces (<span style="color: purple;">purple</span>) -- benchmarked against a 'reference library' (black).
+
+### UV7::BUV496::CD16
+
+```{r}
+#| label: UV7-BUV496-CD16
+#| fig-width: 10
+#| fig-height: 6
+#| out-width: "100%"
+
+plot_trace(spectra[N == "BUV496"], benchmark = TRUE)
+```
+
+
+### V7::BV510::CD3
+
+```{r}
+#| label: V7-BV510-CD3
+#| fig-width: 10
+#| fig-height: 6
+#| out-width: "100%"
+
+plot_trace(spectra[N == "BV510"], benchmark = TRUE)
+```
+
+### YG10::PE-Fire 810::TIGIT
+
+```{r}
+#| label: YG10-PE-Fire810-TIGIT
+#| fig-width: 10
+#| fig-height: 6
+#| out-width: "100%"
+
+plot_trace(spectra[N == "PE-Fire 810"], benchmark = TRUE)
+```
+
+
+```{r, results='asis'}
 #| label: plot-traces
-#| 
+#| include: false
+
+## {.panel-tabset} not working in pkgdown article; disabling for now
+
 lasers <- spectra[, c(levels(laser), "AF")]
 spectra.list <- split(spectra[N != "AF"], by = 'laser')
 spectra.list[['AF']] <- spectra[N == "AF"]
@@ -233,4 +296,21 @@ for(.laser in lasers){
   cat("\n")
 }
 cat(":::\n")
+```
+
+
+```{r}
+#| label: download-spectra
+#| echo: false
+
+downloadthis::download_this(
+  spectra,
+  button_label = "Download OMIP-109 Spectra",
+  button_type = "success",
+  has_icon = TRUE,
+  icon = "fa fa-save",
+  output_name = "spectracle_OMIP109",
+  output_extension = ".csv",
+  csv2 = FALSE
+)
 ```
