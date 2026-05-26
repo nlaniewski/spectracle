@@ -116,31 +116,21 @@ if(download.source){
 ##
 ```
 
-``` r
-
-res <- readRDS(
-  system.file(
-    "extdata/prepared_spectra/spectracle_OMIP-109.rds",
-    package = "spectracle"
-  )
-)
-```
-
 ### Source Files – Raw Reference Controls (Cells)
 
 ‘./Raw/Reference Group’ file paths
 
 ``` r
 
-# dir.source.raw <- grep("Raw.*Ref", list.dirs(dir.source), value = T)
-# raw.reference.controls <- list.files(
-#   dir.source.raw, 
-#   full.names = T, 
-#   pattern = ".fcs"
-# )
-##
+dir.source.raw <- grep("Raw.*Ref", list.dirs(dir.source), value = T)
+raw.reference.controls <- list.files(
+  dir.source.raw,
+  full.names = T,
+  pattern = ".fcs"
+)
+
 data.frame(
-  "./Raw/Reference Group/" = res$raw.reference.controls, 
+  "./Raw/Reference Group/" = raw.reference.controls, 
   check.names = F
 )
 ```
@@ -153,8 +143,7 @@ pass the directory where the source files are contained.
 
 ``` r
 
-# spectra <- spectracle(dir.source.raw)
-spectra <- res$spectra
+spectra <- spectracle(dir.source.raw)
 ```
 
 ### Spectra – OMIP-109
@@ -199,155 +188,34 @@ spectra[, .(N, S, detector, hash.md5)]
 
 ### Spectra – Traces
 
-- [UV](#tabset-7-1)
-- [V](#tabset-7-2)
-- [B](#tabset-7-3)
-- [YG](#tabset-7-4)
-- [R](#tabset-7-5)
-- [AF](#tabset-7-6)
+A few choice individual traces (purple) – benchmarked against a
+‘reference library’ (black).
 
-&nbsp;
+#### UV7::BUV496::CD16
 
-- - [CD11b Spark UV387 (Cells)](#tabset-1-1)
-  - [CD45RA BUV395 (Cells)](#tabset-1-2)
-  - [LIVE DEAD Blue (Cells)](#tabset-1-3)
-  - [CD16 BUV496 (Cells)](#tabset-1-4)
-  - [CCR5 BUV563 (Cells)](#tabset-1-5)
-  - [CD314 BUV615 (Cells)](#tabset-1-6)
-  - [CD39 BUV661 (Cells)](#tabset-1-7)
-  - [CD38 BUV737 (Cells)](#tabset-1-8)
-  - [CD8 BUV805 +BSB (Cells)](#tabset-1-9)
+``` r
 
-  ![](spectracle_OMIP-109_files/figure-html/plot-traces-1.png)
+plot_trace(spectra[N == "BUV496"], benchmark = TRUE)
+```
 
-  ![](spectracle_OMIP-109_files/figure-html/plot-traces-2.png)
+[![](spectracle_OMIP-109_files/figure-html/UV7-BUV496-CD16-1.png)](https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-109_files/figure-html/UV7-BUV496-CD16-1.png)
 
-  ![](spectracle_OMIP-109_files/figure-html/plot-traces-3.png)
+#### V7::BV510::CD3
 
-  ![](spectracle_OMIP-109_files/figure-html/plot-traces-4.png)
+``` r
 
-  ![](spectracle_OMIP-109_files/figure-html/plot-traces-5.png)
+plot_trace(spectra[N == "BV510"], benchmark = TRUE)
+```
 
-  ![](spectracle_OMIP-109_files/figure-html/plot-traces-6.png)
+[![](spectracle_OMIP-109_files/figure-html/V7-BV510-CD3-1.png)](https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-109_files/figure-html/V7-BV510-CD3-1.png)
 
-  ![](spectracle_OMIP-109_files/figure-html/plot-traces-7.png)
+#### YG10::PE-Fire 810::TIGIT
 
-  ![](spectracle_OMIP-109_files/figure-html/plot-traces-8.png)
+``` r
 
-  ![](spectracle_OMIP-109_files/figure-html/plot-traces-9.png)
+plot_trace(spectra[N == "PE-Fire 810"], benchmark = TRUE)
+```
 
-- [CCR7 BV421 (Cells)](#tabset-2-1)
-- [CD123 Super Bright 436 (Cells)](#tabset-2-2)
-- [CD11c eFluor 450 (Cells)](#tabset-2-3)
-- [HLA-DR BV480 (Cells)](#tabset-2-4)
-- [CD3 BV510 (Cells)](#tabset-2-5)
-- [CD20 Spark Violet 538 (Cells)](#tabset-2-6)
-- [IgM BV570 (Cells)](#tabset-2-7)
-- [IgG BV605 (Cells)](#tabset-2-8)
-- [CD28 BV650 (Cells)](#tabset-2-9)
-- [CCR6 BV711 (Cells)](#tabset-2-10)
-- [CXCR5 BV750 (Cells)](#tabset-2-11)
-- [PD-1 BV785 (Cells)](#tabset-2-12)
+[![](spectracle_OMIP-109_files/figure-html/YG10-PE-Fire810-TIGIT-1.png)](https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-109_files/figure-html/YG10-PE-Fire810-TIGIT-1.png)
 
-![](spectracle_OMIP-109_files/figure-html/plot-traces-10.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-11.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-12.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-13.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-14.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-15.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-16.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-17.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-18.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-19.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-20.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-21.png)
-
-- [TIM-3 BB515 (Cells)](#tabset-3-1)
-- [CD57 cFluor B532 (Cells)](#tabset-3-2)
-- [CD14 Spark Blue 550 (Cells)](#tabset-3-3)
-- [CD2 PerCP-Cy5.5 (Cells)](#tabset-3-4)
-- [TCRgd PerCP-Vio700 (Cells)](#tabset-3-5)
-- [CD4 PerCP-Fire 806 (Cells)](#tabset-3-6)
-- [DNAM-1 RealBlue 780 (Cells)](#tabset-3-7)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-22.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-23.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-24.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-25.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-26.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-27.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-28.png)
-
-- [CD56 cFluor YG584 (Cells)](#tabset-4-1)
-- [GRP56 PE (Cells)](#tabset-4-2)
-- [CD24 cFluor YG610 (Cells)](#tabset-4-3)
-- [CD337 PE-Dazzle594 (Cells)](#tabset-4-4)
-- [CD103 PE-Fire 640 250ng (Cells)](#tabset-4-5)
-- [CD45 PerCP (Cells)](#tabset-4-6)
-- [CD95 PE-Cy5 (Cells)](#tabset-4-7)
-- [CD25 cFluor BYG710 (Cells)](#tabset-4-8)
-- [IgD cFluor BYG750 (Cells)](#tabset-4-9)
-- [CXCR3 PE-Cy7 (Cells)](#tabset-4-10)
-- [TIGIT PE-Fire 810 (Cells)](#tabset-4-11)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-29.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-30.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-31.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-32.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-33.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-34.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-35.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-36.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-37.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-38.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-39.png)
-
-- [CD161 APC 500ng (Cells)](#tabset-5-1)
-- [CD1c Alexa Fluor 647 (Cells)](#tabset-5-2)
-- [CD19 Spark NIR685 (Cells)](#tabset-5-3)
-- [CD127 cFluor R720 (Cells)](#tabset-5-4)
-- [CD27 APC-H7 (Cells)](#tabset-5-5)
-- [KLRG-1 APC-Fire 810 (Cells)](#tabset-5-6)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-40.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-41.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-42.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-43.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-44.png)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-45.png)
-
-- [Unstained (Cells)](#tabset-6-1)
-
-![](spectracle_OMIP-109_files/figure-html/plot-traces-46.png)
+Download OMIP-109 Spectra
