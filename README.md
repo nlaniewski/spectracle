@@ -23,7 +23,7 @@ pak::pak("nlaniewski/spectracle")
 - Cytek::Aurora(5L)::SpectroFlo 3+ – *(Beads)* and *(Cells)* controls
   - OMIP-069
   - OMIP-069v2
-  - [OMIP-109](articles/spectracle_OMIP-109.html)
+  - [OMIP-109](https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-109.html)
   - in-house datasets
 
 ## Making a Spectacle of Your Spectra

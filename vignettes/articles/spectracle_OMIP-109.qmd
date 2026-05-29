@@ -158,16 +158,11 @@ raw.reference.controls <- list.files(
   full.names = T,
   pattern = ".fcs"
 )
-
-data.frame(
-  "./Raw/Reference Group/" = raw.reference.controls, 
-  check.names = F
-)
 ```
 
 ```{r}
 #| label: source-data-raw-reference-files-fromRDS
-#| include: false
+#| echo: false
 
 ##
 data.frame(
