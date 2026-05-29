@@ -128,11 +128,6 @@ raw.reference.controls <- list.files(
   full.names = T,
   pattern = ".fcs"
 )
-
-data.frame(
-  "./Raw/Reference Group/" = raw.reference.controls, 
-  check.names = F
-)
 ```
 
 ## Derive Spectra
