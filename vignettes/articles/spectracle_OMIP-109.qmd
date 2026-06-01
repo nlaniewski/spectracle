@@ -230,9 +230,59 @@ spectra[, .(N, S, detector, hash.md5)]
 
 ## Spectra -- Traces
 
+```{r}
+#| label: plotly-traces
+
+p <- plot_trace(spectra, plot.type = 'plotly')
+
+```
+
+
+### UV
+
+```{r}
+#| label: plotly-UV
+
+p$UV
+```
+
+### V
+
+```{r}
+#| label: plotly-V
+
+p$V
+```
+
+### B
+
+```{r}
+#| label: plotly-B
+
+p$B
+```
+
+### YG
+
+```{r}
+#| label: plotly-YG
+
+p$YG
+```
+
+### R
+
+```{r}
+#| label: plotly-R
+
+p$R
+```
+
+### Individual Traces -- Benchmarked 
+
 A few choice individual traces (<span style="color: purple;">purple</span>) -- benchmarked against a 'reference library' (black).
 
-### UV7::BUV496::CD16
+#### UV7::BUV496::CD16
 
 ```{r}
 #| label: UV7-BUV496-CD16
@@ -244,7 +294,7 @@ plot_trace(spectra[N == "BUV496"], benchmark = TRUE)
 ```
 
 
-### V7::BV510::CD3
+#### V7::BV510::CD3
 
 ```{r}
 #| label: V7-BV510-CD3
@@ -255,7 +305,7 @@ plot_trace(spectra[N == "BUV496"], benchmark = TRUE)
 plot_trace(spectra[N == "BV510"], benchmark = TRUE)
 ```
 
-### YG10::PE-Fire 810::TIGIT
+#### YG10::PE-Fire 810::TIGIT
 
 ```{r}
 #| label: YG10-PE-Fire810-TIGIT
@@ -293,6 +343,7 @@ for(.laser in lasers){
 cat(":::\n")
 ```
 
+## Spectra -- Download
 
 ```{r}
 #| label: download-spectra

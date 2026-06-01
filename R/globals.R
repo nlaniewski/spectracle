@@ -10,6 +10,7 @@ utils::globalVariables(
     c(".mtext", "CREATOR", "hash.md5", "vars"),
     c('vector.type'),
     c('FSC_A', 'SSC_A', 'select.beads'),
-    c('$CYT')
+    c('$CYT'),
+    c('alias', 'S')
   )
 )

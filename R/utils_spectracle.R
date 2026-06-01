@@ -39,13 +39,61 @@ plot_spectral.trace.base <- function(x, add.lines = F, ...){
   }
 }
 
+## helper function: plotly interactive html
+plot_spectral.trace.plotly <- function(spectra){
+  ##
+  plotly = {
+    lapply(split(spectra[N != "AF"], by = 'laser'), function(laser){
+      laser[, alias := paste(detector, N, S, tissue.type, sep = "::")]
+      laser[, alias := factor(alias, levels = alias)]
+      ##
+      traces <- data.table::melt(
+        data = laser,
+        measure.vars = laser[, names(.SD), .SDcols = is.numeric],
+        variable.name = "Detector"
+      )
+      n <- traces[, length(unique(alias))]
+      .laser <- laser[, as.character(unique(laser))]
+      ##
+      p <- plotly::plot_ly(
+        data = droplevels(traces),
+        x = ~Detector,
+        y = ~value,
+        color = ~alias,
+        colors = colors.kelly[seq_len(n)],#colorgrDevices::rainbow(n),#grDevices::hcl.colors(n = n, palette = "Purple-Green"),
+        type = "scatter",
+        mode = "lines"
+      )
+      ##
+      p <- plotly::layout(p, xaxis = list(type = 'category'))
+      ##
+      p <- plotly::layout(
+        p,
+        title = sprintf("Laser: %s", .laser),
+        xaxis = list(tickmode = 'linear', dtick = 1, tickangle = 270),
+        yaxis = list(title = "Emission (Normalized [0,1])"),
+        plot_bgcolor = "white",
+        legend = list(
+          orientation = "h",
+          xanchor = "center",
+          x = 0.5,
+          y = -0.2
+        )
+      )
+      ##
+      return(p)
+    })
+  }
+}
+
 #' @title Plot a Spectral Trace
 #'
 #' @param spectra [data.table][data.table::data.table] -- the return of [spectracle].
+#' @param plot.type The plot type to be used -- default `base`. `base` will print to the active device; `plotly` will return an object.
 #' @param benchmark logical -- default `FALSE`; if `TRUE`, derived spectra will be benchmarked against an internal reference library and the closest match (cosine similarity) will be reported as both a black, dashed trace and caption text.
 #'
 #' @returns
-#' A plot is printed to the active device.
+#' A plot is printed to the active device; if `plot.type` is defined as `plotly`, a `plotly` object will be returned.
 #' @export
 #' @examples
 #'
@@ -60,12 +108,24 @@ plot_spectral.trace.base <- function(x, add.lines = F, ...){
 #'
 #' spectra.examples <- lapply(spectra.files, readRDS)
 #'
-#' spectra <- spectra <- spectra.examples$spectra_expt2
+#' spectra <- spectra.examples$spectra_expt2
 #'
 #' plot_trace(spectra[sample.id == "CD16 BUV496 (Cells)"])
 #' plot_trace(spectra[sample.id == "CD16 BUV496 (Cells)"], benchmark = TRUE)
 #'
-plot_trace <- function(spectra, benchmark = FALSE){
+#' \dontrun{
+#' spectra <- spectra.examples$`spectracle_OMIP-109`$spectra
+#' p <- plot_trace(spectra, plot.type = 'plotly')
+#' p$UV
+#' }
+#'
+plot_trace <- function(spectra, plot.type = c('base', 'plotly'), benchmark = FALSE){
+  ##
+  plot.type <- match.arg(plot.type)
+  if(plot.type == 'plotly'){
+    p <- plot_spectral.trace.plotly(spectra)
+    return(p)
+  }
   ##
   res.mdat <- all(mtext.keywords %in% names(spectra))
   if(res.mdat){

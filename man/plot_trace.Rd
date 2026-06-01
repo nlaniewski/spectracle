@@ -4,15 +4,17 @@
 \alias{plot_trace}
 \title{Plot a Spectral Trace}
 \usage{
-plot_trace(spectra, benchmark = FALSE)
+plot_trace(spectra, plot.type = c("base", "plotly"), benchmark = FALSE)
 }
 \arguments{
 \item{spectra}{\link[data.table:data.table]{data.table} -- the return of \link{spectracle}.}
 
+\item{plot.type}{The plot type to be used -- default \code{base}. \code{base} will print to the active device; \code{plotly} will return an object.}
+
 \item{benchmark}{logical -- default \code{FALSE}; if \code{TRUE}, derived spectra will be benchmarked against an internal reference library and the closest match (cosine similarity) will be reported as both a black, dashed trace and caption text.}
 }
 \value{
-A plot is printed to the active device.
+A plot is printed to the active device; if \code{plot.type} is defined as \code{plotly}, a \code{plotly} object will be returned.
 }
 \description{
 Plot a Spectral Trace
@@ -30,9 +32,15 @@ names(spectra.files) <- sub(".rds", "", basename(spectra.files))
 
 spectra.examples <- lapply(spectra.files, readRDS)
 
-spectra <- spectra <- spectra.examples$spectra_expt2
+spectra <- spectra.examples$spectra_expt2
 
 plot_trace(spectra[sample.id == "CD16 BUV496 (Cells)"])
 plot_trace(spectra[sample.id == "CD16 BUV496 (Cells)"], benchmark = TRUE)
+
+\dontrun{
+spectra <- spectra.examples$`spectracle_OMIP-109`$spectra
+p <- plot_trace(spectra, plot.type = 'plotly')
+p$UV
+}
 
 }
