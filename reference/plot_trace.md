@@ -5,7 +5,7 @@ Plot a Spectral Trace
 ## Usage
 
 ``` r
-plot_trace(spectra, benchmark = FALSE)
+plot_trace(spectra, plot.type = c("base", "plotly"), benchmark = FALSE)
 ```
 
 ## Arguments
@@ -16,6 +16,11 @@ plot_trace(spectra, benchmark = FALSE)
   return of
   [spectracle](https://nlaniewski.github.io/spectracle/reference/spectracle.md).
 
+- plot.type:
+
+  The plot type to be used – default `base`. `base` will print to the
+  active device; `plotly` will return an object.
+
 - benchmark:
 
   logical – default `FALSE`; if `TRUE`, derived spectra will be
@@ -25,7 +30,8 @@ plot_trace(spectra, benchmark = FALSE)
 
 ## Value
 
-A plot is printed to the active device.
+A plot is printed to the active device; if `plot.type` is defined as
+`plotly`, a `plotly` object will be returned.
 
 ## Examples
 
@@ -42,9 +48,15 @@ names(spectra.files) <- sub(".rds", "", basename(spectra.files))
 
 spectra.examples <- lapply(spectra.files, readRDS)
 
-spectra <- spectra <- spectra.examples$spectra_expt2
+spectra <- spectra.examples$spectra_expt2
 
 plot_trace(spectra[sample.id == "CD16 BUV496 (Cells)"])
 plot_trace(spectra[sample.id == "CD16 BUV496 (Cells)"], benchmark = TRUE)
 
+
+if (FALSE) { # \dontrun{
+spectra <- spectra.examples$`spectracle_OMIP-109`$spectra
+p <- plot_trace(spectra, plot.type = 'plotly')
+p$UV
+} # }
 ```

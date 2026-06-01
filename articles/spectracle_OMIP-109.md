@@ -183,10 +183,52 @@ spectra[, .(N, S, detector, hash.md5)]
 
 ### Spectra – Traces
 
+``` r
+
+p <- plot_trace(spectra, plot.type = 'plotly')
+```
+
+#### UV
+
+``` r
+
+p$UV
+```
+
+#### V
+
+``` r
+
+p$V
+```
+
+#### B
+
+``` r
+
+p$B
+```
+
+#### YG
+
+``` r
+
+p$YG
+```
+
+#### R
+
+``` r
+
+p$R
+```
+
+#### Individual Traces – Benchmarked
+
 A few choice individual traces (purple) – benchmarked against a
 ‘reference library’ (black).
 
-#### UV7::BUV496::CD16
+##### UV7::BUV496::CD16
 
 ``` r
 
@@ -195,7 +237,7 @@ plot_trace(spectra[N == "BUV496"], benchmark = TRUE)
 
 [![](spectracle_OMIP-109_files/figure-html/UV7-BUV496-CD16-1.png)](https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-109_files/figure-html/UV7-BUV496-CD16-1.png)
 
-#### V7::BV510::CD3
+##### V7::BV510::CD3
 
 ``` r
 
@@ -204,7 +246,7 @@ plot_trace(spectra[N == "BV510"], benchmark = TRUE)
 
 [![](spectracle_OMIP-109_files/figure-html/V7-BV510-CD3-1.png)](https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-109_files/figure-html/V7-BV510-CD3-1.png)
 
-#### YG10::PE-Fire 810::TIGIT
+##### YG10::PE-Fire 810::TIGIT
 
 ``` r
 
@@ -212,5 +254,7 @@ plot_trace(spectra[N == "PE-Fire 810"], benchmark = TRUE)
 ```
 
 [![](spectracle_OMIP-109_files/figure-html/YG10-PE-Fire810-TIGIT-1.png)](https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-109_files/figure-html/YG10-PE-Fire810-TIGIT-1.png)
+
+### Spectra – Download
 
 Download OMIP-109 Spectra
