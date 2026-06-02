@@ -430,7 +430,7 @@ spectracle <- function(
   ##
   pkg <- "spectracle"
   deriving.function <- sprintf("%s_%s", pkg, utils::packageVersion(pkg))
-  spectra <- cbind(deriving.function, vars$mdat, spectra)
+  spectra <- cbind(deriving.function, vars$mdat[spectra, on = 'sample.id'])
   ##
   data.table::setorder(spectra, laser, detector)
   ## AF to last position
