@@ -7,6 +7,7 @@
 ^inst/extdata/expt1$
 ^inst/extdata/expt2$
 ^inst/extdata/OMIP-109_Raw_Reference Group$
+^inst/extdata/OMIP-069_Raw_Reference Group$
 ^data-raw$
 ^_pkgdown\.yml$
 ^docs$
@@ -15,7 +16,6 @@
 ^vignettes/articles/\.quarto$
 ^vignettes/articles/*_files$
 ^vignettes/articles$
-
 ^vignettes/\.quarto$
 ^vignettes/*_files$
 ^doc$
