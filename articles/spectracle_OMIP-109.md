@@ -181,6 +181,31 @@ spectra[, digest::digest(hash.md5)]
 spectra[, .(N, S, detector, hash.md5)]
 ```
 
+### Spectra – Namefix
+
+As `spectra` is intended for use in unmixing raw data, the `N` and `S`
+names will be used to form a conformant parameter name (`$PnN` and
+`$PnS`); once derived and a `spectra` object is available in the
+environment, these names can be edited.
+
+``` r
+
+spectra[
+  i = sample.id == "LIVE DEAD Blue (Cells)",
+  j = c('N', 'S') := list('LIVE DEAD Blue', 'Viability')
+] |> invisible()
+##
+spectra[
+  i = grep("ng", sample.id),
+  j = N := sub(" .*ng", "", N)
+] |> invisible()
+##
+spectra[
+  i = grep("+BSB", sample.id),
+  j = N := sub(" \\+BSB", "", N)
+] |> invisible()
+```
+
 ### Spectra – Traces
 
 ``` r

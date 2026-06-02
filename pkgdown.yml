@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   articles/spectracle_OMIP-069: spectracle_OMIP-069.html
   articles/spectracle_OMIP-109: spectracle_OMIP-109.html
-last_built: 2026-06-02T19:47Z
+last_built: 2026-06-02T20:54Z
 urls:
   reference: https://nlaniewski.github.io/spectracle/reference
   article: https://nlaniewski.github.io/spectracle/articles

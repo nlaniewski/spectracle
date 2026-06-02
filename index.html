@@ -60,9 +60,10 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header">
-<img src="logo.png" class="logo" alt=""><h1 id="spectracle-">spectracle <a class="anchor" aria-label="anchor" href="#spectracle-"></a>
+<img src="logo.png" class="logo" alt=""><h1 id="spectracle--making-a-spectacle-of-your-spectra-">spectracle – <em>“Making a Spectacle of Your Spectra!”</em> <a class="anchor" aria-label="anchor" href="#spectracle--making-a-spectacle-of-your-spectra-"></a>
 </h1>
 </div>
+<p><code>spectracle</code> provides a <strong>FULLY AUTOMATED</strong> method for processing single-color full spectrum cytometry controls and deriving normalized [0,1] spectra for use in unmixing raw/overdetermined data.</p>
 <!-- badges: start -->
 <!-- badges: end -->
 <div class="section level2">
@@ -75,11 +76,11 @@
 <div class="section level2">
 <h2 id="notice">Notice<a class="anchor" aria-label="anchor" href="#notice"></a>
 </h2>
-<p>2026-05-26 – Currently only tested/working with (Manufacturer::Instrument::Software):</p>
+<p>2026-05-26 – Currently tested/working with (Manufacturer::Instrument::Software):</p>
 <ul>
-<li>Cytek::Aurora(5L)::SpectroFlo 3+ – <em>(Beads)</em> and <em>(Cells)</em> controls
+<li>Cytek::Aurora(5L)::SpectroFlo 3+ ; <em>(Beads)</em> and <em>(Cells)</em> controls
 <ul>
-<li>OMIP-069</li>
+<li><a href="https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-069.html">OMIP-069</a></li>
 <li>OMIP-069v2</li>
 <li><a href="https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-109.html">OMIP-109</a></li>
 <li>in-house datasets</li>
@@ -90,7 +91,7 @@
 <div class="section level2">
 <h2 id="making-a-spectacle-of-your-spectra">Making a Spectacle of Your Spectra<a class="anchor" aria-label="anchor" href="#making-a-spectacle-of-your-spectra"></a>
 </h2>
-<p>The series of figures below is a visual representation of what can be accomplished when using <code>spectracle</code> – a FULLY AUTOMATED method for processing single-color full spectrum cytometry controls.</p>
+<p>The series of figures below is a visual representation of what can be accomplished when using <code>spectracle</code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## simply locate a directory containing raw reference controls</span></span>
 <span><span class="va">raw.reference.controls</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.dirs</a></span><span class="op">(</span>path <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span>
@@ -119,8 +120,8 @@ UV10::BUV615::Siglec F – a single ‘spectral trace’ (blue) isolated after a
 <a class="anchor" aria-label="anchor" href="#per-cell-matching--normalized-spectra-figure-3"></a>
 </h3>
 <p>The ‘spectral events’ are scatter-matched using nearest-neighbors to a representative unstained control on a per-cell basis, allowing for accurate AF/background subtraction that is invariant to population spread and/or frequency. The result is well-characterized, normalized spectra that can then be used to unmix raw data.</p>
-<figure><img src="reference/figures/BUV650_norm.png" alt="UV10::BUV615::Siglec F – normalized (0,1) spectra"><figcaption aria-hidden="true">
-UV10::BUV615::Siglec F – normalized (0,1) spectra
+<figure><img src="reference/figures/BUV650_norm.png" alt="UV10::BUV615::Siglec F – normalized [0,1] spectra"><figcaption aria-hidden="true">
+UV10::BUV615::Siglec F – normalized [0,1] spectra
 </figcaption></figure>
 </div>
 </div>
