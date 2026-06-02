@@ -13,8 +13,9 @@ knitr::opts_chunk$set(
 )
 ```
 
-# spectracle <img src="man/figures/logo.png" align="right" height="139" alt="" />
+# spectracle -- *"Making a Spectacle of Your Spectra!"* <img src="man/figures/logo.png" align="right" height="139" alt="" />
 
+`spectracle` provides a **FULLY AUTOMATED** method for processing single-color full spectrum cytometry controls and deriving normalized [0,1] spectra for use in unmixing raw/overdetermined data.
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -28,17 +29,17 @@ pak::pak("nlaniewski/spectracle")
 ```
 ## Notice
 
-2026-05-26 -- Currently only tested/working with (Manufacturer::Instrument::Software):
+2026-05-26 -- Currently tested/working with (Manufacturer::Instrument::Software):
 
-* Cytek::Aurora(5L)::SpectroFlo 3+ -- *(Beads)* and *(Cells)* controls
-  + OMIP-069
+* Cytek::Aurora(5L)::SpectroFlo 3+ ; *(Beads)* and *(Cells)* controls
+  + [OMIP-069](https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-069.html)
   + OMIP-069v2
   + [OMIP-109](https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-109.html)
   + in-house datasets
 
 ## Making a Spectacle of Your Spectra
 
-The series of figures below is a visual representation of what can be accomplished when using `spectracle` -- a FULLY AUTOMATED method for processing single-color full spectrum cytometry controls.
+The series of figures below is a visual representation of what can be accomplished when using `spectracle`.
 
 ```{r, eval=FALSE}
 ## simply locate a directory containing raw reference controls
@@ -64,4 +65,4 @@ In a completely data-driven fashion, the intrusive/nuisance AF is identified, ch
 
 The 'spectral events' are scatter-matched using nearest-neighbors to a representative unstained control on a per-cell basis, allowing for accurate AF/background subtraction that is invariant to population spread and/or frequency.  The result is well-characterized, normalized spectra that can then be used to unmix raw data.
 
-![UV10::BUV615::Siglec F -- normalized (0,1) spectra](man/figures/BUV650_norm.png)
+![UV10::BUV615::Siglec F -- normalized [0,1] spectra](man/figures/BUV650_norm.png)

@@ -1,7 +1,11 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# spectracle <img src="man/figures/logo.png" align="right" height="139" alt="" />
+# spectracle – *“Making a Spectacle of Your Spectra!”* <img src="man/figures/logo.png" align="right" height="139" alt="" />
+
+`spectracle` provides a **FULLY AUTOMATED** method for processing
+single-color full spectrum cytometry controls and deriving normalized
+\[0,1\] spectra for use in unmixing raw/overdetermined data.
 
 <!-- badges: start -->
 
@@ -17,11 +21,11 @@ pak::pak("nlaniewski/spectracle")
 
 ## Notice
 
-2026-05-26 – Currently only tested/working with
+2026-05-26 – Currently tested/working with
 (Manufacturer::Instrument::Software):
 
-- Cytek::Aurora(5L)::SpectroFlo 3+ – *(Beads)* and *(Cells)* controls
-  - OMIP-069
+- Cytek::Aurora(5L)::SpectroFlo 3+ ; *(Beads)* and *(Cells)* controls
+  - [OMIP-069](https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-069.html)
   - OMIP-069v2
   - [OMIP-109](https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-109.html)
   - in-house datasets
@@ -29,8 +33,7 @@ pak::pak("nlaniewski/spectracle")
 ## Making a Spectacle of Your Spectra
 
 The series of figures below is a visual representation of what can be
-accomplished when using `spectracle` – a FULLY AUTOMATED method for
-processing single-color full spectrum cytometry controls.
+accomplished when using `spectracle`.
 
 ``` r
 ## simply locate a directory containing raw reference controls
@@ -78,7 +81,7 @@ spectra that can then be used to unmix raw data.
 
 <figure>
 <img src="man/figures/BUV650_norm.png"
-alt="UV10::BUV615::Siglec F – normalized (0,1) spectra" />
-<figcaption aria-hidden="true">UV10::BUV615::Siglec F – normalized (0,1)
+alt="UV10::BUV615::Siglec F – normalized [0,1] spectra" />
+<figcaption aria-hidden="true">UV10::BUV615::Siglec F – normalized [0,1]
 spectra</figcaption>
 </figure>
