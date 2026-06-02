@@ -76,11 +76,16 @@ reference.group.keywords <- function(flowstate){
   }
   ## CREATOR/software
   software <- flowstate$keywords[, unique(CREATOR)]
-  stopifnot(
-    "Mixed software (keyword: CREATOR); can't reliably derive metadata" = length(software) == 1
-  )
+  if(length(software) != 1){
+    warning(
+      sprintf("Mixed software: %s", paste(software, collapse = " ; "))
+    )
+    warning(
+      "might not be able to reliably derive metadata"
+    )
+  }
   ## derive software-specific metadata based on established naming convention
-  if(grepl("spectroflo", software, ignore.case = T)) reference.group.keywords.spectroflo(flowstate)
+  if(all(grepl("spectroflo", software, ignore.case = T))) reference.group.keywords.spectroflo(flowstate)
   ## prepend a new class for downstream workflow purposes
   data.table::setattr(flowstate, 'class', c("reference.group", class(flowstate)))
   ## return
