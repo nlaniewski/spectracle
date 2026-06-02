@@ -11,7 +11,7 @@ get.vars <- function(flowstate) {
         c("$CYT", "$CYTSN", "CREATOR", "$PROJ", "$DATE")
     ]
   )
-  mdat <- flowstate$keywords[, unique(.SD), .SDcols = cols.mdat]
+  mdat <- flowstate$keywords[, .SD, .SDcols = c('sample.id', cols.mdat)]
   ##
   list(
     cols.by = cols.by,
