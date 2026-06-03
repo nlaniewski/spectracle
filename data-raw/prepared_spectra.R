@@ -1,7 +1,13 @@
+## prepared_spectra will need to be rebuilt following any re-factoring/function changes
+## document, load, and source this script
+
 ## subsampling raw reference control .fcs files is not sufficient for the purpose of examples;
-## need the full (large file size) .fcs;
+## need the full (large file size) .fcs which often contain rare events that are needed to test/demonstrate functionality;
 ## to prevent a large final package/repo size, processing will take place here;
 ## the relatively much smaller derived spectra can then be saved as .rds objects for use in examples
+
+
+# expt1 -------------------------------------------------------------------
 
 ## expt1 -- mouse spleen challenging samples
 raw.reference.controls <- system.file("extdata/expt1", package = "spectracle")
@@ -29,8 +35,40 @@ spectra[
 ]
 saveRDS(spectra, "inst/extdata/prepared_spectra/spectra_expt1_filtered.rds")
 
+# expt2 -------------------------------------------------------------------
+
 ## expt2 -- OMIP-069 Expt4 bead and cell controls
 raw.reference.controls <- system.file("extdata/expt2", package = "spectracle")
 spectra <- spectracle(raw.reference.controls)
 saveRDS(spectra, "inst/extdata/prepared_spectra/spectra_expt2.rds")
-##
+
+# OMIP-069v1 --------------------------------------------------------------
+
+## OMIP-069 -- human PBMC; 40 color (original panel)
+raw.reference.controls <- system.file(
+  "extdata/OMIP-069_Raw_Reference Group",
+  package = "spectracle"
+)
+spectra <- spectracle(raw.reference.controls)
+saveRDS(spectra, "inst/extdata/prepared_spectra/spectracle_OMIP-069_v1.rds")
+
+# OMIP-069v2 --------------------------------------------------------------
+
+## OMIP-069v2 -- human PBMC; 40 color (revised panel); beads and cells
+raw.reference.controls <- system.file(
+  "extdata/OMIP-069v2_Raw_Reference Group",
+  package = "spectracle"
+)
+spectra <- spectracle(raw.reference.controls)
+saveRDS(spectra, "inst/extdata/prepared_spectra/spectracle_OMIP-069_v2.rds")
+
+# OMIP-109 ----------------------------------------------------------------
+
+## OMIP-109 -- human PBMC; 45 color
+raw.reference.controls <- system.file(
+  "extdata/OMIP-109_Raw_Reference Group",
+  package = "spectracle"
+)
+spectra <- spectracle(raw.reference.controls)
+saveRDS(spectra, "inst/extdata/prepared_spectra/spectracle_OMIP-109.rds")
+
