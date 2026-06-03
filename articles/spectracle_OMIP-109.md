@@ -13,9 +13,11 @@ Derive spectra using OMIP-109 source data.
 
 Source data as presented in
 [OMIP-109](http://www.ncbi.nlm.nih.gov/pubmed/39466962) is downloaded
-from its public repository:
+from its [public
+repository](https://doi.org/10.6084/m9.figshare.25699221):
 
-- [figshare – OMIP-109](https://doi.org/10.6084/m9.figshare.25699221)
+- [figshare –
+  OMIP-109](https://figshare.com/articles/dataset/_b_45-Color_Full_Spectrum_Flow_Cytometry_Panel_b_/25699221?file=45873810)
 
 Click to see how OMIP-109 source data was obtained.
 
@@ -167,13 +169,13 @@ Derived using a fully data-driven/automated process, the resultant
 spectra should reproduce given the same source data and function
 version. A summary digest is generated from the individual hashes:
 
-- Hash (md5) summary (historic): *cc8be5bd56a9f25337ce09d68ff80a45*
+- Hash (md5) summary (historic): *24fa40db612c0407240464ba62d34c73*
 
 ``` r
 
 ## hash (md5) summary for this instance
 spectra[, digest::digest(hash.md5)]
-#> [1] "cc8be5bd56a9f25337ce09d68ff80a45"
+#> [1] "24fa40db612c0407240464ba62d34c73"
 ```
 
 ``` r
@@ -211,6 +213,13 @@ spectra[
 ``` r
 
 p <- plot_trace(spectra, plot.type = 'plotly')
+```
+
+#### AF (autofluorescence)
+
+``` r
+
+p$AF
 ```
 
 #### UV

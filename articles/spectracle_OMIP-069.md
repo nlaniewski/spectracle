@@ -13,9 +13,11 @@ Derive spectra using OMIP-069 source data.
 
 Source data as presented in
 [OMIP-069](https://pubmed.ncbi.nlm.nih.gov/32830910/) is downloaded from
-its public repository:
+its [public
+repository](https://doi.org/10.6084/m9.figshare.25901635.v1):
 
-- [figshare – OMIP-069](https://doi.org/10.6084/m9.figshare.25901635.v1)
+- [figshare –
+  OMIP-069](https://figshare.com/articles/preprint/40-color_commentary/25901635/1?file=46539499)
 
 Click to see how OMIP-069 source data was obtained.
 
@@ -166,13 +168,13 @@ Derived using a fully data-driven/automated process, the resultant
 spectra should reproduce given the same source data and function
 version. A summary digest is generated from the individual hashes:
 
-- Hash (md5) summary (historic): *bd830ba7113eca131f3c9c8229b6a543*
+- Hash (md5) summary (historic): *1064f900cf9a59c05c2225733a699795*
 
 ``` r
 
 ## hash (md5) summary for this instance
 spectra[, digest::digest(hash.md5)]
-#> [1] "bd830ba7113eca131f3c9c8229b6a543"
+#> [1] "1064f900cf9a59c05c2225733a699795"
 ```
 
 ``` r
@@ -200,6 +202,13 @@ spectra[
 ``` r
 
 p <- plot_trace(spectra, plot.type = 'plotly')
+```
+
+#### AF (autofluorescence)
+
+``` r
+
+p$AF
 ```
 
 #### UV
@@ -267,7 +276,7 @@ plot_trace(spectra[N == "BV510"], benchmark = TRUE)
 plot_trace(spectra[N == "PE-Fire 810"], benchmark = TRUE)
 ```
 
-[![](spectracle_OMIP-069_files/figure-html/YG10-PE-Fire810-TIGIT-1.png)](https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-069_files/figure-html/YG10-PE-Fire810-TIGIT-1.png)
+[![](spectracle_OMIP-069_files/figure-html/YG10-PE-Fire810-HLA-DR-1.png)](https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-069_files/figure-html/YG10-PE-Fire810-HLA-DR-1.png)
 
 ### Spectra – Download
 
