@@ -43,46 +43,49 @@ plot_spectral.trace.base <- function(x, add.lines = F, ...){
 plot_spectral.trace.plotly <- function(spectra){
   ##
   plotly = {
-    lapply(split(spectra[N != "AF"], by = 'laser'), function(laser){
-      laser[, alias := paste(detector, N, S, tissue.type, sep = "::")]
-      laser[, alias := factor(alias, levels = alias)]
-      ##
-      traces <- data.table::melt(
-        data = laser,
-        measure.vars = laser[, names(.SD), .SDcols = is.numeric],
-        variable.name = "Detector"
-      )
-      n <- traces[, length(unique(alias))]
-      .laser <- laser[, as.character(unique(laser))]
-      ##
-      p <- plotly::plot_ly(
-        data = droplevels(traces),
-        x = ~Detector,
-        y = ~value,
-        color = ~alias,
-        colors = colors.kelly[seq_len(n)],#colorgrDevices::rainbow(n),#grDevices::hcl.colors(n = n, palette = "Purple-Green"),
-        type = "scatter",
-        mode = "lines"
-      )
-      ##
-      p <- plotly::layout(p, xaxis = list(type = 'category'))
-      ##
-      p <- plotly::layout(
-        p,
-        title = sprintf("Laser: %s", .laser),
-        xaxis = list(tickmode = 'linear', dtick = 1, tickangle = 270),
-        yaxis = list(title = "Emission (Normalized [0,1])"),
-        plot_bgcolor = "white",
-        legend = list(
-          orientation = "h",
-          xanchor = "center",
-          x = 0.5,
-          y = -0.2
+    lapply(
+      c(split(spectra[N != "AF"], by = 'laser'), list("AF" = spectra[N == "AF"])),
+      function(laser){
+        laser[, alias := paste(detector, N, S, tissue.type, sep = "::")]
+        laser[, alias := sub("::NA", "", alias)]#hacky way here to generalize for no 'S' name
+        laser[, alias := factor(alias, levels = alias)]
+        ##
+        traces <- data.table::melt(
+          data = laser,
+          measure.vars = laser[, names(.SD), .SDcols = is.numeric],
+          variable.name = "Detector"
         )
-      )
-      ##
-      return(p)
-    })
+        n <- traces[, length(unique(alias))]
+        .laser <- laser[, as.character(unique(laser))]
+        ##
+        p <- plotly::plot_ly(
+          data = droplevels(traces),
+          x = ~Detector,
+          y = ~value,
+          color = ~alias,
+          colors = colors.kelly[seq_len(n)],#colorgrDevices::rainbow(n),#grDevices::hcl.colors(n = n, palette = "Purple-Green"),
+          type = "scatter",
+          mode = "lines"
+        )
+        ##
+        p <- plotly::layout(p, xaxis = list(type = 'category'))
+        ##
+        p <- plotly::layout(
+          p,
+          title = sprintf("Laser: %s", .laser),
+          xaxis = list(tickmode = 'linear', dtick = 1, tickangle = 270),
+          yaxis = list(title = "Emission (Normalized [0,1])"),
+          plot_bgcolor = "white",
+          legend = list(
+            orientation = "h",
+            xanchor = "center",
+            x = 0.5,
+            y = -0.2
+          )
+        )
+        ##
+        return(p)
+      })
   }
 }
 
