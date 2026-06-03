@@ -26,7 +26,7 @@ pak::pak("nlaniewski/spectracle")
 
 - Cytek::Aurora(5L)::SpectroFlo 3+ ; *(Beads)* and *(Cells)* controls
   - [OMIP-069](https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-069.html)
-  - OMIP-069v2
+  - [OMIP-069v2](https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-069v2.html)
   - [OMIP-109](https://nlaniewski.github.io/spectracle/articles/spectracle_OMIP-109.html)
   - in-house datasets
 
