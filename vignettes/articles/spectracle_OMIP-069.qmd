@@ -25,9 +25,9 @@ Derive spectra using OMIP-069 source data.
 
 # Source Data
 
-Source data as presented in [OMIP-069](https://pubmed.ncbi.nlm.nih.gov/32830910/) is downloaded from its public repository:
+Source data as presented in [OMIP-069](https://pubmed.ncbi.nlm.nih.gov/32830910/) is downloaded from its [public repository](https://doi.org/10.6084/m9.figshare.25901635.v1):
 
-* [figshare -- OMIP-069](https://doi.org/10.6084/m9.figshare.25901635.v1)
+* [figshare -- OMIP-069](https://figshare.com/articles/preprint/40-color_commentary/25901635/1?file=46539499)
 
 ```{r}
 #| label: source-data
@@ -133,15 +133,14 @@ if(download.source){
 #| label: prepared-OMIP-069
 #| include: false
 
-## load the preprocessed data -- see /data-raw/prepared_spectra_OMIP-109.R
-res <- readRDS(
+## load the preprocessed data -- see /data-raw/prepared_spectra.R
+spectra <- readRDS(
   system.file(
     "extdata/prepared_spectra/spectracle_OMIP-069_v1.rds",
     package = "spectracle"
   )
 )
 ```
-
 
 ## Source Files -- Raw Reference Controls (Cells)
 
@@ -165,7 +164,7 @@ raw.reference.controls <- list.files(
 
 ##
 data.frame(
-  "./Raw/Reference Group/" = res$raw.reference.controls, 
+  "./Raw/Reference Group/" = spectra$sample.id, 
   check.names = F
 )
 ```
@@ -179,14 +178,6 @@ data.frame(
 #| eval: false
 
 spectra <- spectracle(dir.source.raw)
-```
-
-```{r}
-#| label: spectracle-fromRDS
-#| include: false
-
-# spectra <- spectracle(dir.source.raw)
-spectra <- res$spectra
 ```
 
 ## Spectra -- OMIP-069
@@ -210,8 +201,7 @@ spectra[]
 
 Derived using a fully data-driven/automated process, the resultant spectra should reproduce given the same source data and function version.  A summary digest is generated from the individual hashes: 
 
-
-* Hash (md5) summary (historic): *bd830ba7113eca131f3c9c8229b6a543*
+* Hash (md5) summary (historic): *1064f900cf9a59c05c2225733a699795*
 
 ```{r}
 #| label: spectra-omip069-hash-summary
@@ -219,7 +209,6 @@ Derived using a fully data-driven/automated process, the resultant spectra shoul
 ## hash (md5) summary for this instance
 spectra[, digest::digest(hash.md5)]
 ```
-
 
 ```{r}
 #| label: spectra-omip069-hashes
@@ -240,16 +229,21 @@ spectra[
 ] |> invisible()
 ```
 
-
 ## Spectra -- Traces
 
 ```{r}
 #| label: plotly-traces
 
 p <- plot_trace(spectra, plot.type = 'plotly')
-
 ```
 
+### AF (autofluorescence)
+
+```{r}
+#| label: plotly-AF
+
+p$AF
+```
 
 ### UV
 
@@ -306,7 +300,6 @@ A few choice individual traces (<span style="color: purple;">purple</span>) -- b
 plot_trace(spectra[N == "BUV496"], benchmark = TRUE)
 ```
 
-
 #### V7::BV510::CD3
 
 ```{r}
@@ -321,39 +314,12 @@ plot_trace(spectra[N == "BV510"], benchmark = TRUE)
 #### YG10::PE-Fire 810::TIGIT
 
 ```{r}
-#| label: YG10-PE-Fire810-TIGIT
+#| label: YG10-PE-Fire810-HLA-DR
 #| fig-width: 10
 #| fig-height: 6
 #| out-width: "100%"
 
 plot_trace(spectra[N == "PE-Fire 810"], benchmark = TRUE)
-```
-
-
-```{r, results='asis'}
-#| label: plot-traces
-#| include: false
-
-## {.panel-tabset} not working in pkgdown article; disabling for now
-
-lasers <- spectra[, c(levels(laser), "AF")]
-spectra.list <- split(spectra[N != "AF"], by = 'laser')
-spectra.list[['AF']] <- spectra[N == "AF"]
-## each unique laser + AF as a tabset
-cat("::: {.panel-tabset}\n")
-for(.laser in lasers){
-  cat("\n###", .laser, "\n")
-  ## laser-specific trace plots as a tabset
-  cat("::: {.panel-tabset}\n")
-  for(id in spectra.list[[.laser]][, as.character(sample.id)]){#.names
-    cat("\n#### ", id, "\n")
-    plot_trace(spectra.list[[.laser]][sample.id == id])
-    cat("\n")
-  }
-  cat(":::\n")
-  cat("\n")
-}
-cat(":::\n")
 ```
 
 ## Spectra -- Download

@@ -1,7 +1,7 @@
 ---
-title: "spectracle -- OMIP-109"
+title: "spectracle -- OMIP-069v2"
 vignette: >
-  %\VignetteIndexEntry{spectracle_OMIP-109}
+  %\VignetteIndexEntry{spectracle_OMIP-069v2}
   %\VignetteEngine{quarto::html}
   %\VignetteEncoding{UTF-8}
 knitr:
@@ -21,38 +21,37 @@ library(spectracle)
 
 # Objective
 
-Derive spectra using OMIP-109 source data.
+Derive spectra using OMIP-069v2 source data -- both 'Beads' and 'Cells'
 
 # Source Data
 
-Source data as presented in [OMIP-109](http://www.ncbi.nlm.nih.gov/pubmed/39466962) is downloaded from its [public repository](https://doi.org/10.6084/m9.figshare.25699221):
+Source data as presented in [OMIP-069v2](https://pubmed.ncbi.nlm.nih.gov/39268753/) is downloaded from its [public repository](https://doi.org/10.6084/m9.figshare.25901635.v1):
 
-* [figshare -- OMIP-109](https://figshare.com/articles/dataset/_b_45-Color_Full_Spectrum_Flow_Cytometry_Panel_b_/25699221?file=45873810)
+* [figshare -- OMIP-069v2](https://figshare.com/articles/preprint/40-color_commentary/25901635/1?file=46539949)
 
 ```{r}
 #| label: source-data
 #| code-fold: true
-#| code-summary: "Click to see how OMIP-109 source data was obtained."
+#| code-summary: "Click to see how OMIP-069v2 source data was obtained."
 #| eval: false
 
 ## manually download or follow this script
 
 ## source directory; this path is user-dependent;
 ## the author of this article previously downloaded these source files to:
-dir.source <- "W:/OMIP-109_flowstate/data_source/OMIP-XXX 45-Color Experiment 1/"
+dir.source <- "W:/OMIP-069v2_flowstate/data_source/Exp4_Revised Panel_Donor2_FrozenPBMCs/"
 ## these source files were processed using spectracle();
 ## the results were saved to an .RDS solely for building this article
 
 ## BELOW IS THE METHOD USED TO DOWNLOAD/VERIFY SOURCE
 
-## figshare name: 45-Color Full Spectrum Flow Cytometry Panel
-## Experiment ($PROJ) name: OMIP-XXX 45-Color Experiment 1
-## Size: 1.74 GB
-## MD5 checksum: 623c49ca26c4584a3bcc44b6a3fa5843
-## download link: https://ndownloader.figshare.com/files/45873810
-## Citation: Jaimes, Maria (2024). 45-Color Full Spectrum Flow Cytometry Panel. 
-## figshare. Dataset. https://doi.org/10.6084/m9.figshare.25699221.v1
-
+## figshare name: Exp4_Revised Panel_Donor2_FrozenPBMCs
+## Experiment ($PROJ) name: Exp4_Revised Panel_Donor2_FrozenPBMCs
+## Size: 1.26 GB
+## MD5 checksum: 6c8ee84405088647ff770cf7c6fd8143
+## download link: https://ndownloader.figshare.com/files/46539949
+## Citation: Bonilla, Diana Lucia (2024). 40-color commentary. 
+## figshare. Preprint. https://doi.org/10.6084/m9.figshare.25901635.v1
 
 ## test for existence and integrity of source files (.fcs)
 if(dir.exists(dir.source)){
@@ -60,7 +59,7 @@ if(dir.exists(dir.source)){
                     digest::digest,
                     file = TRUE)
   digest <- digest::digest(as.vector(digests))
-  if(digest != "fbe1796cfccead8c4096f942826f6613"){
+  if(digest != "06d61a305a32085d4dd35a1bba0b03a3"){
     message("Digest of source files (.fcs) does not match historic value;\ndownloading source files...")
     download.source <- TRUE
   }else{
@@ -71,7 +70,7 @@ if(dir.exists(dir.source)){
 }
 if(download.source){
   temp <- tempfile(tmpdir = "data_temp/", fileext = ".zip")
-  zip.link <- "https://ndownloader.figshare.com/files/45873810"
+  zip.link <- "https://ndownloader.figshare.com/files/46539949"
   curl::curl_download(
     url = zip.link,
     destfile = temp,
@@ -79,16 +78,17 @@ if(download.source){
     mode = "wb"
   )
   ## check the hash
-  if (tools::md5sum(temp) != "623c49ca26c4584a3bcc44b6a3fa5843") {
+  if (tools::md5sum(temp) != "6c8ee84405088647ff770cf7c6fd8143") {
     stop("MD5 checksum (hash) of the downloaded .zip does not match the historic value.")
   }
-  ## files contained in the .zip: 100 files;
+  ## files contained in the .zip: 169 files;
   ## Raw, Unmixed, and SpectroFlo software files (.Expt, .WTML, and .UST)
   utils::unzip(temp, list = TRUE)
   ## unzip to "./data_temp"
   utils::unzip(temp, files = NULL, exdir = "./data_temp/")
   ## get the original 'Project' ('$PROJ') name to reconstruct directory structure
-  proj <- "./data_temp/Raw/Reference Group/Unstained (Cells).fcs" |>
+  proj <- list.files("data_temp/", full.names = T, recursive = T) |>
+    grep("Raw.*Unstained", x = _, value = T) |>
     flowstate:::readFCStext() |>
     flowstate:::keywords.to.data.table() |>
     _[][['$PROJ']]
@@ -131,17 +131,18 @@ if(download.source){
 ```
 
 ```{r}
-#| label: prepared-OMIP-109
+#| label: prepared-OMIP-069v2
 #| include: false
 
 ## load the preprocessed data -- see /data-raw/prepared_spectra.R
 spectra <- readRDS(
   system.file(
-    "extdata/prepared_spectra/spectracle_OMIP-109.rds",
+    "extdata/prepared_spectra/spectracle_OMIP-069_v2.rds",
     package = "spectracle"
   )
 )
 ```
+
 
 ## Source Files -- Raw Reference Controls (Cells)
 
@@ -181,7 +182,7 @@ data.frame(
 spectra <- spectracle(dir.source.raw)
 ```
 
-## Spectra -- OMIP-109
+## Spectra -- OMIP-069v2
 
 `spectracle()` returns a standardized `data.table::data.table()` containing relevant metadata:
 
@@ -189,11 +190,12 @@ spectra <- spectracle(dir.source.raw)
 * date-of-acquisition
 * cytometer, serial number, software
 * sample identifier (sample name, fluor, marker/stain, peak detector, laser)
+  + tissue.type: Beads ; Cells
 * derived, normalized [0,1] spectra
 * hash summaries for each spectra
 
 ```{r}
-#| label: spectra-omip109
+#| label: spectra-omip069v2
 
 spectra[]
 ```
@@ -202,17 +204,17 @@ spectra[]
 
 Derived using a fully data-driven/automated process, the resultant spectra should reproduce given the same source data and function version.  A summary digest is generated from the individual hashes: 
 
-* Hash (md5) summary (historic): *24fa40db612c0407240464ba62d34c73*
+* Hash (md5) summary (historic): *dea437b3b39373c82a771ae5219c0300*
 
 ```{r}
-#| label: spectra-omip109-hash-summary
+#| label: spectra-omip069v2-hash-summary
 
 ## hash (md5) summary for this instance
 spectra[, digest::digest(hash.md5)]
 ```
 
 ```{r}
-#| label: spectra-omip109-hashes
+#| label: spectra-omip069v2-hashes
 
 spectra[, .(N, S, detector, hash.md5)]
 ```
@@ -227,16 +229,6 @@ As `spectra` is intended for use in unmixing raw data, the `N` and `S` names wil
 spectra[
   i = sample.id == "LIVE DEAD Blue (Cells)",
   j = c('N', 'S') := list('LIVE DEAD Blue', 'Viability')
-] |> invisible()
-##
-spectra[
-  i = grep("ng", sample.id),
-  j = N := sub(" .*ng", "", N)
-] |> invisible()
-##
-spectra[
-  i = grep("+BSB", sample.id),
-  j = N := sub(" \\+BSB", "", N)
 ] |> invisible()
 ```
 
@@ -300,66 +292,121 @@ p$R
 
 A few choice individual traces (<span style="color: purple;">purple</span>) -- benchmarked against a 'reference library' (black).
 
-#### UV7::BUV496::CD16
+#### V8::Spark Violet 538::CD20::Cells
 
 ```{r}
-#| label: UV7-BUV496-CD16
+#| label: plot-trace-1
 #| fig-width: 10
 #| fig-height: 6
 #| out-width: "100%"
 
-plot_trace(spectra[N == "BUV496"], benchmark = TRUE)
+plot_trace(
+  spectra[N == "Spark Violet 538" & tissue.type == "Cells"], 
+  benchmark = TRUE
+)
 ```
 
-#### V7::BV510::CD3
+#### YG3::cFluor YG610::CD24
 
 ```{r}
-#| label: V7-BV510-CD3
+#| label: plot-trace-2
 #| fig-width: 10
 #| fig-height: 6
 #| out-width: "100%"
 
-plot_trace(spectra[N == "BV510"], benchmark = TRUE)
+plot_trace(
+  spectra[N == "cFluor YG610" & tissue.type == "Cells"], 
+  benchmark = TRUE
+)
 ```
 
-#### YG10::PE-Fire 810::TIGIT
+#### YG7::cFluor BYG710::CD25
 
 ```{r}
-#| label: YG10-PE-Fire810-TIGIT
+#| label: plot-trace-3
 #| fig-width: 10
 #| fig-height: 6
 #| out-width: "100%"
 
-plot_trace(spectra[N == "PE-Fire 810"], benchmark = TRUE)
+plot_trace(
+  spectra[N == "cFluor BYG710" & tissue.type == "Cells"], 
+  benchmark = TRUE
+)
 ```
 
-```{r, results='asis'}
-#| label: plot-traces
-#| include: false
+#### B2::cFluor B532::CD57
 
-## {.panel-tabset} not working in pkgdown article; disabling for now
+```{r}
+#| label: plot-trace-4
+#| fig-width: 10
+#| fig-height: 6
+#| out-width: "100%"
 
-lasers <- spectra[, c(levels(laser), "AF")]
-spectra.list <- split(spectra[N != "AF"], by = 'laser')
-spectra.list[['AF']] <- spectra[N == "AF"]
-## each unique laser + AF as a tabset
-cat("::: {.panel-tabset}\n")
-for(.laser in lasers){
-  cat("\n###", .laser, "\n")
-  ## laser-specific trace plots as a tabset
-  cat("::: {.panel-tabset}\n")
-  for(id in spectra.list[[.laser]][, as.character(sample.id)]){#.names
-    cat("\n#### ", id, "\n")
-    plot_trace(spectra.list[[.laser]][sample.id == id])
-    cat("\n")
-  }
-  cat(":::\n")
-  cat("\n")
-}
-cat(":::\n")
+plot_trace(
+  spectra[N == "cFluor B532" & tissue.type == "Cells"], 
+  benchmark = TRUE
+)
+```
+
+#### R4::cFluor R720::CD127
+
+```{r}
+#| label: plot-trace-5
+#| fig-width: 10
+#| fig-height: 6
+#| out-width: "100%"
+
+plot_trace(
+  spectra[N == "cFluor R720" & tissue.type == "Cells"], 
+  benchmark = TRUE
+)
+```
+
+#### B10::PerCP-Vio700::TCRgd
+
+```{r}
+#| label: plot-trace-6
+#| fig-width: 10
+#| fig-height: 6
+#| out-width: "100%"
+
+plot_trace(
+  spectra[N == "PerCP-Vio700" & tissue.type == "Cells"], 
+  benchmark = TRUE
+)
+```
+
+#### V5::BV480::HLA-DR
+
+```{r}
+#| label: plot-trace-7
+#| fig-width: 10
+#| fig-height: 6
+#| out-width: "100%"
+
+plot_trace(
+  spectra[N == "BV480" & tissue.type == "Cells"], 
+  benchmark = TRUE
+)
+```
+
+#### YG8::cFluor BYG750::IgD
+
+```{r}
+#| label: plot-trace-8
+#| fig-width: 10
+#| fig-height: 6
+#| out-width: "100%"
+
+plot_trace(
+  spectra[N == "cFluor BYG750" & tissue.type == "Beads"], 
+  benchmark = TRUE
+)
 ```
 
 ## Spectra -- Download
+
+As `spectracle` will derive `spectra` for all files (provided that there is a matched 'universal' unstained/negative), both 'Beads' and 'Cells' are included in the final `data.table`; when unmixing, `spectra` can be subset to include only controls-of-choice. 
 
 ```{r}
 #| label: download-spectra
@@ -367,11 +414,11 @@ cat(":::\n")
 
 downloadthis::download_this(
   spectra,
-  button_label = "Download OMIP-109 Spectra",
+  button_label = "Download OMIP-069v2 Spectra",
   button_type = "success",
   has_icon = TRUE,
   icon = "fa fa-save",
-  output_name = "spectracle_OMIP109",
+  output_name = "spectracle_OMIP069v2",
   output_extension = ".csv",
   csv2 = FALSE
 )
