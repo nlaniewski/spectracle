@@ -373,32 +373,38 @@ spectracle <- function(
 
   ## 3) subtract out the matched AF vectors (rows); medians for linear vector; normalize
   spectra <- ref.spectral$data[
-    i = N != "AF", #& tissue.type == 'Cells',
+    ,#i = N != "AF", #& tissue.type == 'Cells',
     j = {
-      if(.BY$tissue.type == 'Cells'){
-        ## 3 CONDITIONAL) af.medians (matched to sample) can have fewer rows due to duplicate nni matches;
-        ## get the group index to drop rows in .SD so they match up for subtraction
-        i.group <- af.medians[i = sample.id == .BY$sample.id, group]
-        spectral.vec.linear <- sapply(
-          (.SD[i.group] - af.medians[
-            i = sample.id == .BY$sample.id,
-            j = .SD,
+      if(.BY$N != "AF"){
+        if(.BY$tissue.type == 'Cells'){
+          ## 3 CONDITIONAL) af.medians (matched to sample) can have fewer rows due to duplicate nni matches;
+          ## get the group index to drop rows in .SD so they match up for subtraction
+          i.group <- af.medians[i = sample.id == .BY$sample.id, group]
+          spectral.vec.linear <- sapply(
+            (.SD[i.group] - af.medians[
+              i = sample.id == .BY$sample.id,
+              j = .SD,
+              .SDcols = vars$detectors
+            ]),
+            stats::median
+          )
+        }else if(.BY$tissue.type == "Beads"){
+          vec <- af.signatures[
+            i = tissue.type == "Beads" & vector.type == 'median',
+            j = unlist(.SD),
             .SDcols = vars$detectors
-          ]),
-          stats::median
-        )
-      }else if(.BY$tissue.type == "Beads"){
-        vec <- af.signatures[
-          i = tissue.type == "Beads" & vector.type == 'median',
-          j = unlist(.SD),
-          .SDcols = vars$detectors
-        ]
-        ##
-        spectral.vec.linear <- sapply((.SD - vec), stats::median)
+          ]
+          ##
+          spectral.vec.linear <- sapply((.SD - vec), stats::median)
+        }
+        spectral.vec.norm <- spectral.vec.linear / max(spectral.vec.linear)
+        spectral.vec.norm[spectral.vec.norm < 0] <- 0
+        as.list(spectral.vec.norm)
+      }else if(.BY$N == "AF"){
+        spectral.vec.linear <- sapply(.SD, stats::median)
+        spectral.vec.norm <- spectral.vec.linear / max(spectral.vec.linear)
+        as.list(spectral.vec.norm)
       }
-      spectral.vec.norm <- spectral.vec.linear / max(spectral.vec.linear)
-      spectral.vec.norm[spectral.vec.norm < 0] <- 0
-      as.list(spectral.vec.norm)
     },
     .SDcols = vars$detectors,
     by = c(vars$cols.by, 'detector')
@@ -412,13 +418,13 @@ spectracle <- function(
 
   ## prepare spectra for final output
   ## exhaustive metadata can/should be added for reproducibility/transparency
-  spectra <- rbind(
-    spectra,
-    af.signatures[
-      i = tissue.type %in% spectra[, levels(tissue.type)] & vector.type == 'median',
-      j = !'vector.type'
-    ]
-  )
+  # spectra <- rbind(
+  #   spectra,
+  #   af.signatures[
+  #     i = tissue.type %in% spectra[, levels(tissue.type)] & vector.type == 'median',
+  #     j = !'vector.type'
+  #   ]
+  # )
   spectra[
     ,
     laser := factor(
