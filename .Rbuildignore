@@ -8,6 +8,7 @@
 ^inst/extdata/expt2$
 ^inst/extdata/OMIP-109_Raw_Reference Group$
 ^inst/extdata/OMIP-069_Raw_Reference Group$
+^inst/extdata/OMIP-069v2_Raw_Reference Group$
 ^data-raw$
 ^_pkgdown\.yml$
 ^docs$
