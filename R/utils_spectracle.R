@@ -1,5 +1,11 @@
 ## helper function: cosine similarity;
-## scored against a reference vector
+## vectors scored against each other
+cosine.similarity.vec <- function(x, y) {
+  sum(x * y) / (sqrt(sum(x^2)) * sqrt(sum(y^2)))
+}
+
+## helper function: cosine similarity;
+## matrix scored against a reference vector
 cosine.similarity.mat <- function(x, reference.vector){
   ## conformable?
   if(!all(names(reference.vector) %in% colnames(x))){
@@ -44,7 +50,10 @@ plot_spectral.trace.plotly <- function(spectra){
   ##
   plotly = {
     lapply(
-      c(split(spectra[N != "AF"], by = 'laser'), list("AF" = spectra[N == "AF"])),
+      c(
+        split(spectra[N != "AF"], by = 'laser', drop = T),
+        list("AF" = spectra[N == "AF"])
+      ),
       function(laser){
         laser[, alias := paste(detector, N, S, tissue.type, sep = "::")]
         laser[, alias := sub("::NA", "", alias)]#hacky way here to generalize for no 'S' name
@@ -200,7 +209,7 @@ spectra.benchmark <- function(spectra){
     cyt,
     list.files(
       system.file("extdata/spectra_library", package = "spectracle"),
-      full.names = T, pattern = ".rds"
+      full.names = T, pattern = "wide"
     ),
     ignore.case = T,
     value = T
