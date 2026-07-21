@@ -15,6 +15,7 @@ derived spectra.
 ``` r
 spectracle(
   raw.reference.controls,
+  unstained.ids = NULL,
   filter.top.expressing = NULL,
   top.expressing.override = NULL,
   print.timings = FALSE,
@@ -30,6 +31,17 @@ spectracle(
   control .fcs files; one of
   [list.dirs](https://rdrr.io/r/base/list.files.html) or
   [list.files](https://rdrr.io/r/base/list.files.html).
+
+- unstained.ids:
+
+  a named character vector – default `NULL`; in the odd case where the
+  unstained sample(s) are ambiguously named, `unstained.ids` can be
+  defined. The named character vector should take the following form
+  (representative examples of ambiguously named samples):
+
+  - `c("Unstained (Beads)" = "BioLegend Positive Beads (Beads)")`
+
+  - `c("Unstained (Cells)" = "PBMC (Cells)")`
 
 - filter.top.expressing:
 
@@ -108,11 +120,11 @@ plot_trace(spectra)
 
 
 
-spectra[, .(N, hash.md5)]
-#>         N                         hash.md5
-#>    <fctr>                           <char>
-#> 1: BUV496 8888993b42bdb2339d32e80ef1ac8352
-#> 2: BUV496 fc04c76e893f834bd73223397784dfb1
-#> 3:     AF e5b397892044f30626570875d24f156b
-#> 4:     AF ed299c448e8b5c26e10ac60e5eec18a3
+spectra[, .(tissue.type, N, hash.md5)]
+#>    tissue.type      N                         hash.md5
+#>         <fctr> <fctr>                           <char>
+#> 1:       Cells BUV496 8888993b42bdb2339d32e80ef1ac8352
+#> 2:       Beads BUV496 fc04c76e893f834bd73223397784dfb1
+#> 3:       Cells     AF e5b397892044f30626570875d24f156b
+#> 4:       Beads     AF ed299c448e8b5c26e10ac60e5eec18a3
 ```

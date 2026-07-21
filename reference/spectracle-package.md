@@ -19,5 +19,7 @@ Useful links:
 
 Authors:
 
+- Nathan Laniewski <nathan_laniewski@urmc.rochester.edu>
+
 - Oliver Burton <olivertburton@gmail.com>
   ([ORCID](https://orcid.org/0000-0003-3884-7373))
