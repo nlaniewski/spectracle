@@ -22,3 +22,7 @@
 ^doc$
 ^Meta$
 ^scratch$
+^inst/extdata/20250218 AF data for collab_Raw_Reference Group$
+^inst/extdata/20250218 AF data for collab_Raw_Unstained$
+^inst/extdata/20250218 AF data for collab_Raw_Stained$
+^inst/extdata/OMIP-109_Raw_Multicolor$
