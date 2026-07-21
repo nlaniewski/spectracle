@@ -5,12 +5,9 @@
 # c(...) |> sort() |> dput()
 utils::globalVariables(
   c(
-    c("N", "TYPE", "detector", "group", "laser", "ord", "sample.id",
-      "select.nonsaturating", "select.singlets", "tissue.type"),
-    c(".mtext", "CREATOR", "hash.md5", "vars"),
-    c('vector.type'),
-    c('FSC_A', 'SSC_A', 'select.beads'),
-    c('$CYT'),
-    c('alias', 'S')
-  )
+    "$CYT", ".", ".mtext", "alias", "configuration", "CREATOR",
+    "detector", "fluorochrome", "FSC_A", "group", "hash.md5", "laser",
+    "N", "ord", "par", "S", "sample.id", "select.beads", "select.nonsaturating",
+    "select.singlets", "SSC_A", "tissue.type", "TYPE", "V", "vars",
+    "vector.type")
 )
