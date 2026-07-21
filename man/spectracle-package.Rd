@@ -23,6 +23,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Nathan Laniewski \email{nathan_laniewski@urmc.rochester.edu}
   \item Oliver Burton \email{olivertburton@gmail.com} (\href{https://orcid.org/0000-0003-3884-7373}{ORCID})
 }
 

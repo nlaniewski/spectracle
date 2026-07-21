@@ -6,6 +6,7 @@
 \usage{
 spectracle(
   raw.reference.controls,
+  unstained.ids = NULL,
   filter.top.expressing = NULL,
   top.expressing.override = NULL,
   print.timings = FALSE,
@@ -15,11 +16,17 @@ spectracle(
 \arguments{
 \item{raw.reference.controls}{a character vector of full directory/path names to raw single-color control .fcs files; one of \link{list.dirs} or \link{list.files}.}
 
+\item{unstained.ids}{a named character vector -- default \code{NULL}; in the odd case where the unstained sample(s) are ambiguously named, \code{unstained.ids} can be defined.  The named character vector should take the following form (representative examples of ambiguously named samples):
+\itemize{
+\item \code{c("Unstained (Beads)" = "BioLegend Positive Beads (Beads)")}
+\item \code{c("Unstained (Cells)" = "PBMC (Cells)")}
+}}
+
 \item{filter.top.expressing}{a character vector -- default \code{NULL}; to modulate the automated selection of 'spectral.events', the supplied character vector should match to unique .fcs sample name(s). If defined, a conditional filtering will take place to return only the 0.99 (cosine) most similar 'spectral.events'.}
 
 \item{top.expressing.override}{a named numeric vector -- default \code{NULL}; to override the automated selection of 'spectral.events', the name(s) of the supplied numeric vector should match to unique .fcs sample name(s). Example as follows: c("BUV615 (Cells)" = 20); for 'BUV615', only 20 top expressing events will be used to characterize/derive the final spectra (see example below).}
 
-\item{print.timings}{logical -- default \code{FALSE}; if \code{TRUE}, a \link[tictoc:tic]{tictoc} will print to the console, detailing execution times.}
+\item{print.timings}{logical -- default \code{FALSE}; if \code{TRUE}, a \link[tictoc:tic.log]{tictoc} will print to the console, detailing execution times.}
 
 \item{...}{not defined; placeholder.}
 }
@@ -69,6 +76,6 @@ spectra <- spectra <- spectra.examples$spectra_expt2
 
 plot_trace(spectra)
 
-spectra[, .(N, hash.md5)]
+spectra[, .(tissue.type, N, hash.md5)]
 
 }
