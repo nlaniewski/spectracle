@@ -26,10 +26,12 @@ remove.saturating.doublets <- function(flowstate){
   flowstate::select_nonsaturating(flowstate)
   flowstate <- subset(flowstate, select.nonsaturating)
   flowstate$data[, select.nonsaturating := NULL]
+  data.table::setindex(flowstate$parameters, NULL)
   ## remove doublet events
   flowstate::select_singlets(flowstate, quantiles = c(0.85, 0.975))#@params
   flowstate <- subset(flowstate, select.singlets)
   flowstate$data[, select.singlets := NULL]
+  # data.table::setindex(flowstate$parameters, NULL)
   ##
   invisible(flowstate)
 }
