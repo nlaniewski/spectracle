@@ -68,6 +68,19 @@
 #   )
 # }
 
+# raw.fluorescence.check <- function(fcs.file.paths){
+#   invisible(sapply(fcs.file.paths, function(i){
+#     parms <- parameters.to.data.table(readFCStext(i))
+#     if(!'TYPE' %in% names(parms)){
+#       stop("Are these .fcs files processed by flowstate? 'TYPE' is missing from [['parameters']].")
+#     }else{
+#       if(!"Raw_Fluorescence" %in% parms[['TYPE']]){
+#         stop("'Raw_Fluorescence' value not found in 'TYPE' keyword; is this a raw reference control?")
+#       }
+#     }
+#   }))
+# }
+
 ## function to add metadata to [['keywords]] and [['data']]
 reference.group.keywords <- function(flowstate){
   ## column identifier for [['data']] and [['keywords']]
