@@ -12,13 +12,13 @@ Source:
 [`DESCRIPTION`](https://github.com/nlaniewski/spectracle/blob/master/DESCRIPTION)
 
 Laniewski N, Burton O (2026). *spectracle: Derive Spectra from Full
-Spectrum Cytometry Controls*. R package version 0.1.1,
+Spectrum Cytometry Controls*. R package version 0.2.0,
 <https://github.com/nlaniewski/spectracle>.
 
     @Manual{,
       title = {spectracle: Derive Spectra from Full Spectrum Cytometry Controls},
       author = {Nathan Laniewski and Oliver Burton},
       year = {2026},
-      note = {R package version 0.1.1},
+      note = {R package version 0.2.0},
       url = {https://github.com/nlaniewski/spectracle},
     }
