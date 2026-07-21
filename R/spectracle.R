@@ -11,6 +11,11 @@
 #' @param filter.top.expressing a character vector -- default `NULL`; to modulate the automated selection of 'spectral.events', the supplied character vector should match to unique .fcs sample name(s). If defined, a conditional filtering will take place to return only the 0.99 (cosine) most similar 'spectral.events'.
 #' @param top.expressing.override a named numeric vector -- default `NULL`; to override the automated selection of 'spectral.events', the name(s) of the supplied numeric vector should match to unique .fcs sample name(s). Example as follows: c("BUV615 (Cells)" = 20); for 'BUV615', only 20 top expressing events will be used to characterize/derive the final spectra (see example below).
 #' @param print.timings logical -- default `FALSE`; if `TRUE`, a [tictoc][tictoc::tic.log] will print to the console, detailing execution times.
+#' @param unstained.ids a named character vector -- default `NULL`; in the odd case where the unstained sample(s) are ambiguously named, `unstained.ids` can be defined.  The named character vector should take the following form (representative examples of ambiguously named samples):
+#' \itemize{
+#'   \item `c("Unstained (Beads)" = "BioLegend Positive Beads (Beads)")`
+#'   \item `c("Unstained (Cells)" = "PBMC (Cells)")`
+#' }
 #' @param ... not defined; placeholder.
 #'
 #' @returns
@@ -52,10 +57,11 @@
 #'
 #' plot_trace(spectra)
 #'
-#' spectra[, .(N, hash.md5)]
+#' spectra[, .(tissue.type, N, hash.md5)]
 #'
 spectracle <- function(
     raw.reference.controls,
+    unstained.ids = NULL,
     filter.top.expressing = NULL,
     top.expressing.override = NULL,
     print.timings= FALSE,
@@ -95,6 +101,15 @@ spectracle <- function(
       concatenate = T
     )
   )
+  ## name-fix
+  for(id in names(unstained.ids)){
+    for(ii in c('keywords', 'data')){
+      ref[[ii]][
+        i = grep(unstained.ids[[id]], sample.id, fixed = T),
+        j = sample.id := id
+      ]
+    }
+  }
 
   tictoc::toc(log = TRUE, quiet = TRUE)
   ##
