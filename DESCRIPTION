@@ -18,7 +18,6 @@ Description: Fully automated derivation and characterization of spectra from ful
 License: AGPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Imports:
     collapse,
     digest,
@@ -27,6 +26,8 @@ Imports:
     FNN,
     plotly,
     RColorBrewer,
+    shiny,
+    shinyWidgets,
     tictoc
 Remotes: 
     nlaniewski/flowstate
@@ -39,3 +40,4 @@ Suggests:
     quarto
 Config/Needs/website: quarto
 VignetteBuilder: quarto
+Config/roxygen2/version: 8.0.0
